@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.Map;
 
 public class HashMap3D_spe_in2 extends HashMap3DG<Integer, Integer, Integer, Triple>{
 
@@ -11,15 +12,15 @@ public class HashMap3D_spe_in2 extends HashMap3DG<Integer, Integer, Integer, Tri
 		
 		Triple old;
 		
-		for (HashMap.Entry<Integer,HashMap2DG<Integer, Integer, Triple>> entry3D : other.getOuterMap().entrySet()) {
+		for (Map.Entry<Integer,HashMap2DG<Integer, Integer, Triple>> entry3D : other.getOuterMap().entrySet()) {
 			Integer key3D = entry3D.getKey();
 			HashMap2DG<Integer, Integer, Triple> value3D = entry3D.getValue();
 	        
-	        for (HashMap.Entry<Integer,HashMap<Integer, Triple>> entry2D : value3D.getOuterMap().entrySet()) {
+	        for (Map.Entry<Integer,HashMap<Integer, Triple>> entry2D : value3D.getOuterMap().entrySet()) {
 	        	Integer key2D = entry2D.getKey();
 	            HashMap<Integer, Triple> value2D = entry2D.getValue();
 	            
-	            for (HashMap.Entry<Integer,Triple> entry1D : value2D.entrySet()) {
+	            for (Map.Entry<Integer,Triple> entry1D : value2D.entrySet()) {
 	            	Integer key1D = entry1D.getKey();
 	            	Triple value1D = entry1D.getValue();
 	            	

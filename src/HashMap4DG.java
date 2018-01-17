@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.Map;
 
 
 public class HashMap4DG<A,B,C,D,E> {
@@ -35,7 +36,7 @@ public class HashMap4DG<A,B,C,D,E> {
     
     public void display() {
     	
-    	for (HashMap.Entry<A,HashMap3DG<B,C,D,E>> entry : outerMap.entrySet()) {
+    	for (Map.Entry<A,HashMap3DG<B,C,D,E>> entry : outerMap.entrySet()) {
             A key = entry.getKey();
             HashMap3DG<B,C,D,E> value = entry.getValue();
             
@@ -52,27 +53,27 @@ public class HashMap4DG<A,B,C,D,E> {
 	}
 
 	public void display2() {
-		for (HashMap.Entry<A,HashMap3DG<B,C,D,E>> entry4D : outerMap.entrySet()) {
+		for (Map.Entry<A,HashMap3DG<B,C,D,E>> entry4D : outerMap.entrySet()) {
 			A key4D = entry4D.getKey();
 			HashMap3DG<B,C,D,E> value4D = entry4D.getValue();
 	        
 	        System.out.println("For A " + key4D + " : ");
 	        
-	        for (HashMap.Entry<B,HashMap2DG<C,D,E>> entry3D : value4D.getOuterMap().entrySet()) {
+	        for (Map.Entry<B,HashMap2DG<C,D,E>> entry3D : value4D.getOuterMap().entrySet()) {
 	            B key3D = entry3D.getKey();
 	            HashMap2DG<C,D,E> value3D = entry3D.getValue();
 	            
 	            // use key and value
 	            System.out.println("For B " + key3D + " : ");
 	            
-	            for (HashMap.Entry<C,HashMap<D,E>> entry2D : value3D.getOuterMap().entrySet()) {
+	            for (Map.Entry<C,HashMap<D,E>> entry2D : value3D.getOuterMap().entrySet()) {
 	            	C key2D = entry2D.getKey();
 	            	HashMap<D,E> value2D = entry2D.getValue();
 	            	
 	            	// use key and value
 	                System.out.println("Value for key " + key2D + " : ");
 	                
-	                for (HashMap.Entry<D,E> entry1D : value2D.entrySet()) {
+	                for (Map.Entry<D,E> entry1D : value2D.entrySet()) {
 		            	D key1D = entry1D.getKey();
 		            	E value1D = entry1D.getValue();
 		            	

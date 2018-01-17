@@ -382,7 +382,7 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 					//new_hmap.clear3D();
 					//final_hmap.clear3D();
 					
-					/*System.out.println("Affichage hmap après completion");
+					/*System.out.println("Affichage hmap aprï¿½s completion");
 					hmap.display2();
 					System.out.println("Affichage new_hmap");
 					new_hmap.display2();
@@ -453,6 +453,10 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 		check = searchBest(0).getPred();
 		if (check != "") {
 			todo.add(check);
+		}
+		else {
+			// add node 0 and stop
+			nodes_sol.add(graph.getNode(0));
 		}
 		
 		

@@ -1,8 +1,12 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.lang.Math; 
 import java.lang.Integer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
 
 public class Graph {
 
@@ -98,6 +102,116 @@ public class Graph {
 			}
 		}
 	}
+	
+	
+	
+	
+	/****************         Generate graph from file      ************************/
+	public Graph(String nomInstance) {
+		
+		try
+		{
+		    File f = new File (nomInstance);
+		    FileReader fr = new FileReader (f);
+		    BufferedReader br = new BufferedReader (fr);
+		    
+			
+		    try
+		    {
+		    	String line;
+			    String[] word_sep;
+			    int read_col;
+			    int cpt_col;
+			    int power_two_col;
+			    int tmp;
+			    int first;
+			    int second;
+			    double weight;
+		    	
+		    	// Get n, m and c
+		    	line = br.readLine();
+		    	word_sep = line.split("\\t");
+		    	
+		    	// Basic attribution
+				n = Integer.valueOf(word_sep[2]);
+				m = Integer.valueOf(word_sep[3]);
+				
+				nodeList = new ArrayList<Node>();
+				outneighbors = new int[n][n];
+				nbOutneighbors = new int[n];
+				weight_outneighbors = new double[n][n];
+				
+				/**************** Generate vertices ********/
+				
+				// Create vertices with colors
+				// first node
+				line = br.readLine();
+		    	read_col = 0;
+		    	cpt_col = 0;
+				power_two_col = (int)Math.pow(2., cpt_col);
+				nodeList.add(new Node(power_two_col));
+				
+				// other nodes
+				line = br.readLine();
+		    	word_sep = line.split("\\t");
+		    	while (!word_sep[0].equals("0")) {
+		    		// change color if second term is different from previous line
+		    		tmp = Integer.valueOf(word_sep[1]);
+		    		if (tmp != read_col) {
+		    			read_col = tmp;
+		    			cpt_col++;
+		    			power_two_col = (int)Math.pow(2., cpt_col);
+		    		}
+		    		
+		    		// add new node
+		    		nodeList.add(new Node(power_two_col));
+		    		
+		    		// keep reading
+		    		line = br.readLine();
+			    	word_sep = line.split("\\t");
+		    		
+		    	}
+				
+				// remember number of colors
+				c = cpt_col+1;
+				
+				/*********** Generate arcs ******/
+		    	
+		    	while (line != null) {
+		    		word_sep = line.split("\\t");
+		    		
+		    		first = Integer.valueOf(word_sep[0]);
+		    		second = Integer.valueOf(word_sep[1]);
+		    		weight = Double.valueOf(word_sep[2]);
+		    		
+		    		//System.out.println("first = " + first + ", second = " + second + " and weight = " + weight);
+		    		
+		    		outneighbors[first][nbOutneighbors[first]] = second;
+		    		weight_outneighbors[first][nbOutneighbors[first]] = weight;
+					nbOutneighbors[first]++;
+					
+					// keep reading
+		    		line = br.readLine();
+		    	}
+				
+				
+		        br.close();
+		        fr.close();
+		    
+		    
+		    }
+		    catch (IOException exception)
+		    {
+		        System.out.println ("Erreur lors de la lecture du fichier " + nomInstance + " : " + exception.getMessage());
+		    }
+		}
+		catch (FileNotFoundException exception)
+		{
+		    System.out.println ("Le fichier " + nomInstance + " n'a pas été trouvé");
+		}
+		
+	}
+	
 	
 	
 	//Getters and setters

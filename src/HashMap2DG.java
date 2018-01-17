@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.Map;
 
 
 public class HashMap2DG<A,B,C> {
@@ -27,14 +28,14 @@ public class HashMap2DG<A,B,C> {
     
     public void display() {
     	
-    	for (HashMap.Entry<A,HashMap<B, C>> entry : outerMap.entrySet()) {
+    	for (Map.Entry<A,HashMap<B,C>> entry : outerMap.entrySet()) {
             A key = entry.getKey();
             HashMap<B, C> value = entry.getValue();
             
             // use key and value
             System.out.println("For A " + key + " : ");
             
-            for (HashMap.Entry<B, C> entrybis : value.entrySet()) {
+            for (Map.Entry<B, C> entrybis : value.entrySet()) {
             	B keybis = entrybis.getKey();
             	C valuebis = entrybis.getValue();
             	
@@ -60,7 +61,7 @@ public class HashMap2DG<A,B,C> {
 	}
     
 	public void clear2D() {
-    	for (HashMap.Entry<A,HashMap<B, C>> entry : outerMap.entrySet()) {
+    	for (Map.Entry<A,HashMap<B, C>> entry : outerMap.entrySet()) {
             entry.getValue().clear();
         }
     }
