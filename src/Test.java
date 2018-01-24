@@ -8,12 +8,11 @@ public class Test {
 	
 	public static void main(String[] args) {
 		
-		// Don't put more than 30 colors : 2^31 = max_int + 1
-		
 		// Variables
 		//Graph graph = new Graph("Small_data_MCA/red-graphs-100-200/4.graph");
 		Graph graph = new Graph(50,8);
 		
+		// Don't put more than 30 colors : 2^31 = max_int + 1
 		if (graph.getC() <= 30) {
 			
 			MCA_instance_FPT_C instance_c = new MCA_instance_FPT_C(graph);

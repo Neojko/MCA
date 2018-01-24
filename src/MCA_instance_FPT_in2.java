@@ -122,6 +122,8 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 		HashMap2DG<Integer, Integer, Triple> innermap_node2;
 		HashMap<Integer, Triple> innermap_size;
 		HashMap<Integer, Triple> innermap_size2;
+		HashMap3DG<Integer, Integer, Integer, Triple> new_hmap = new HashMap3DG<Integer, Integer, Integer, Triple>();
+		HashMap3DG<Integer, Integer, Integer, Triple> final_hmap = new HashMap3DG<Integer, Integer, Integer, Triple>();
 		
 		
 		// Going from node n-1 to node 0 ensures that all outneighbors of current_node have already been computed thanks to color hierarchy
@@ -136,9 +138,6 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 				
 				// For each color in the outneighborhood of current_node
 				for (int index_c = 0; index_c < nb_Col_out_nei[current_node]; index_c ++) {
-					
-					HashMap3DG<Integer, Integer, Integer, Triple> new_hmap = new HashMap3DG<Integer, Integer, Integer, Triple>();
-					HashMap3DG<Integer, Integer, Integer, Triple> final_hmap = new HashMap3DG<Integer, Integer, Integer, Triple>();
 					
 					c = col_out_nei[current_node][index_c];
 					//System.out.println("--- Working on color " + c + " (not in X)");
@@ -176,7 +175,8 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 										
 										// For all color sets of size current_size of node u
 										for (Map.Entry<Integer, Triple> entry : innermap_size.entrySet()) {
-							            	Integer color_set = entry.getKey();
+											
+											Integer color_set = entry.getKey();
 							            	Triple value = entry.getValue();
 							            	
 							            	// use key and value
@@ -354,8 +354,8 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 					/****** AJOUTER TOUTES LES NOUVELLES ENTREES A HMAP ET CLEAR LA NOUVELLE ******/
 					hmap.complete_hmap(final_hmap);
 					hmap.complete_hmap(new_hmap);
-					//new_hmap.clear3D();
-					//final_hmap.clear3D();
+					new_hmap.clear3D();
+					final_hmap.clear3D();
 					
 					/*System.out.println("Affichage hmap apres completion");
 					hmap.display2();

@@ -82,9 +82,10 @@ public class HashMap3DG<A,B,C,D> {
 	}
 	
 	public void clear3D( ) {
-		for (Map.Entry<A,HashMap2DG<B,C,D>> entry3D : outerMap.entrySet()) {
+		/*for (Map.Entry<A,HashMap2DG<B,C,D>> entry3D : outerMap.entrySet()) {
 			entry3D.getValue().clear2D();
-		}
+		}*/
+		outerMap.clear();
 	}
 	
 	

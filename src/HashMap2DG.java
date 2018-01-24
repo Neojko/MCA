@@ -60,12 +60,6 @@ public class HashMap2DG<A,B,C> {
 		return outerMap;
 	}
     
-	public void clear2D() {
-    	for (Map.Entry<A,HashMap<B, C>> entry : outerMap.entrySet()) {
-            entry.getValue().clear();
-        }
-    }
-    
     
     
 }
