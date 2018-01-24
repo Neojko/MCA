@@ -1,6 +1,7 @@
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
+import java.lang.StringBuffer;
 
 public class MCA_instance_FPT_in2 extends MCA_instance {
 	
@@ -12,17 +13,6 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 	protected ArrayList<Node> nodes_sol;
 	protected ArrayList<Arc> arcs_sol;
 	
-	
-	public MCA_instance_FPT_in2 (int number_of_nodes, int number_of_colors) {
-		hmap = new HashMap3D_spe_in2();
-		graph = new Graph(number_of_nodes, number_of_colors);
-		intwo = graph.compute_intwo();
-		col_out_nei = new int[graph.getN()][graph.getC()];
-		nb_Col_out_nei = new int[graph.getN()];
-		graph.compute_col_out_nei(col_out_nei,nb_Col_out_nei);
-	}
-	
-	// To compare results on same graph
 	public MCA_instance_FPT_in2 (Graph example) {
 		hmap = new HashMap3D_spe_in2();
 		graph = example;
@@ -37,29 +27,7 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 	}
 	
 	public void short_display() {
-		//graph.short_display();
-		System.out.println(graph);
-		System.out.println("X = " + intwo.size());
-		
-		/*System.out.print("v : |col(N^+(v))|");
-		for (int i=0;i<nb_Col_out_nei.length;i++) {
-			System.out.print(" //  " + i + " : " + nb_Col_out_nei[i]);
-		}
-		System.out.println();*/
-		
-		/*System.out.println("v : col(N^+(v))");
-		for (int i = 0; i < graph.getN(); i++) {
-			System.out.print(i + " : ");
-			for (int j = 0; j < nb_Col_out_nei[i]; j++) {
-				System.out.print(col_out_nei[i][j] + " ");
-			}
-			System.out.println();
-		}*/
-		System.out.print("Affichage intwo : ");
-		for (int i = 0; i < intwo.size(); i++) {
-			System.out.print(intwo.get(i) + "  ");
-		}
-		System.out.println();
+		System.out.println("Graph containing " + graph.getN() + " vertices, " + graph.getM() + " arcs and " + graph.getC() + " colors (in2 = " + intwo.size() + ").");
 		System.out.println();
 		
 	}
@@ -147,7 +115,7 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 		Double first;
 		Triple second;
 		int current_node;
-		String toAdd, pred;
+		StringBuffer toAdd = new StringBuffer(""), pred = new StringBuffer("");
 		int var_size, var_col;
 		
 		HashMap2DG<Integer, Integer, Triple> innermap_node;
@@ -231,10 +199,18 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 											//System.out.println("------------ first = " + first + " and second = " + second);
 							                
 							                if ( ( (second == null) || (first > second.getWeight()) ) && ( first > 0 ) ) {
-							                	toAdd = String.valueOf(graph.getNode(num_outneighbor).getColor());
-							                	pred = "X_" + String.valueOf(current_node) + '_' + String.valueOf(num_outneighbor) + '_' + String.valueOf(current_size) + '_' + String.valueOf(color_set);
+							                	toAdd.setLength(0);
+							                	toAdd.append(String.valueOf(graph.getNode(num_outneighbor).getColor()));
+							                	
+							                	pred.setLength(0);
+							                	pred.append(String.valueOf(current_node) + '-' + String.valueOf(num_outneighbor));
+							                	if (value.getPred() != "") {
+							                		pred.append('_' + value.getPred());
+							                	}
+							                	
+							                	
 							                	new_hmap.addElement(Integer.valueOf(graph.getNode(current_node).getNumero()), Integer.valueOf(var_size), 
-							                			Integer.valueOf(var_col), new Triple(toAdd,first, pred));
+							                			Integer.valueOf(var_col), new Triple(toAdd.toString(),first, pred.toString()));
 								                
 								                /*System.out.print("New entry A (new_hmap): ");
 								                System.out.print("node = " + current_node);
@@ -329,23 +305,22 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 									                //System.out.println("--------------- first = " + first + " and second = " + second);
 									                
 									                if ( ( (second == null) || (first > second.getWeight()) ) && (first > 0) ) {
-									                	toAdd = value_s_one.getOut() + '_' + value_s_two.getOut();
+									                	toAdd.setLength(0);
+									                	toAdd.append(value_s_one.getOut() + '_' + value_s_two.getOut());
 									                	
-									                	if ( (size_one != 0) && (size_two != 0) ) {
-									                		pred = "Y_" + String.valueOf(current_node) + '_' + String.valueOf(size_one) + '_' + String.valueOf(s_one) 
-					                						+ '_' + String.valueOf(size_two) + '_' + String.valueOf(s_two);
-									                	}
-									                	else if (size_one != 0) {
-									                		pred = "Z_" + String.valueOf(current_node) + '_' + value_s_one.getPred();
-									                		//pred = value_s_one.getPred();
+									                	pred.setLength(0);
+									                	if (value_s_one.getPred() != "") {
+									                		pred.append(value_s_one.getPred());
+									                		if (value_s_two.getPred() != "") {
+									                			pred.append("_" + value_s_two.getPred());
+									                		}		
 									                	}
 									                	else {
-									                		pred = "Z_" + String.valueOf(current_node) + '_' + value_s_two.getPred();
-									                		//pred = value_s_two.getPred();
+									                		pred.append(value_s_two.getPred());
 									                	}
 									                	
 									                	final_hmap.addElement(Integer.valueOf(graph.getNode(current_node).getNumero()),
-									            				Integer.valueOf(size_one+size_two), (s_one+s_two), new Triple(toAdd, first, pred));
+									            				Integer.valueOf(size_one+size_two), (s_one+s_two), new Triple(toAdd.toString(), first, pred.toString()));
 										                
 										                /*System.out.print("New entry B (final_hmap): ");
 										                System.out.print("node = " + Integer.valueOf(graph.getNode(current_node).getNumero()));
@@ -382,7 +357,7 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 					//new_hmap.clear3D();
 					//final_hmap.clear3D();
 					
-					/*System.out.println("Affichage hmap apr�s completion");
+					/*System.out.println("Affichage hmap apres completion");
 					hmap.display2();
 					System.out.println("Affichage new_hmap");
 					new_hmap.display2();
@@ -432,326 +407,77 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 		
 	}
 	
-		
 	
 	public void retrieveSol() {		
 		
-		// Variables
-		
 		nodes_sol = new ArrayList<Node>();
 		arcs_sol = new ArrayList<Arc>();
-		Arc arc;
 		
-		int curseur, node_one, node_two, size_one, size_two, color_set_one, color_set_two;
-		String check;
+		String check = searchBest(0).getPred();
+		//System.out.println(check);
 		
-		ArrayList<String> todo = new ArrayList<String>();
-		ArrayList<String> new_todo = new ArrayList<String>();
-		ArrayList<String> tmp = new ArrayList<String>();
+		int curseur = 0;
+		boolean turn = true;
+		int node_one = 0;
+		int node_two = 0;
 		
-		// Initialization
-		check = searchBest(0).getPred();
-		if (check != "") {
-			todo.add(check);
-		}
-		else {
-			// add node 0 and stop
-			nodes_sol.add(graph.getNode(0));
-		}
+		// Add root
+		nodes_sol.add(graph.getNode(node_one));
 		
-		
-		while (todo.size() > 0) {
+		// String looking like node1-node2_node1-node2 ..
+		while (curseur < check.length()) {
 			
-			//System.out.println("Loop beginning : todo.size() = " + todo.size());
-			for (int i = 0; i < todo.size(); i++) {
-				
-				//System.out.println("Working on string : " + todo.get(i));
-				
-				// Shape of pred : X_nodebase_toNode_size_colorset or Y_node_size1_colorset1_size2_colorset2
-				if (todo.get(i).charAt(0) == 'X') {
-					
-					// for nodebase
-					curseur = 2;
-					node_one = 0;
-					while (todo.get(i).charAt(curseur) != '_') {
-						node_one = 10 * node_one + Character.getNumericValue(todo.get(i).charAt(curseur));
-						curseur++;
-					}
-					//System.out.println("node_one = " + node_one);
-					if (!nodes_sol.contains(graph.getNode(node_one))) {
-						nodes_sol.add(graph.getNode(node_one));
-					}
-					
-					// for toNode
-					curseur++;
-					node_two = 0;
-					while (todo.get(i).charAt(curseur) != '_') {
-						node_two = 10 * node_two + Character.getNumericValue(todo.get(i).charAt(curseur));
-						curseur++;
-					}
-					//System.out.println("node_two = " + node_two);
-					if (!nodes_sol.contains(graph.getNode(node_two))) {
-						nodes_sol.add(graph.getNode(node_two));
-					}
-					
-					arc = new Arc(node_one, node_two);
-					if (!arcs_sol.contains(arc)) {
-						arcs_sol.add(arc);
-						//System.out.println("X : ajout de l'arc entre " + node_one + " et " + node_two);
-					}
-					
-					// for size
-					curseur++;
-					size_one = 0;
-					while (todo.get(i).charAt(curseur) != '_') {
-						size_one = 10 * size_one + Character.getNumericValue(todo.get(i).charAt(curseur));
-						curseur++;
-					}
-					//System.out.println("size_one = " + size_one);
-					
-					// for colorset
-					curseur++;
-					color_set_one = 0;
-					while (curseur < todo.get(i).length()) {
-						color_set_one = 10 * color_set_one + Character.getNumericValue(todo.get(i).charAt(curseur));
-						curseur++;
-					}
-					//System.out.println("color_set_one = " + color_set_one);
-					
-					check = hmap.getElement(node_two, size_one, color_set_one).getPred();
-					if (check != "") {
-						new_todo.add(check);
-						//System.out.println("We add : " + check);
-					}
-					
-				}
-				// Case Y
-				else if (todo.get(i).charAt(0) == 'Y') {
-					
-					// for node
-					curseur = 2;
-					node_one = 0;
-					while (todo.get(i).charAt(curseur) != '_') {
-						node_one = 10 * node_one + Character.getNumericValue(todo.get(i).charAt(curseur));
-						curseur++;
-					}
-					//System.out.println("node_one = " + node_one);
-					if (!nodes_sol.contains(graph.getNode(node_one))) {
-						nodes_sol.add(graph.getNode(node_one));
-					}
-					
-					// for size_one
-					curseur++;
-					size_one = 0;
-					while (todo.get(i).charAt(curseur) != '_') {
-						size_one = 10 * size_one + Character.getNumericValue(todo.get(i).charAt(curseur));
-						curseur++;
-					}
-					//System.out.println("size_one = " + size_one);
-					
-					// for color_set_one
-					curseur++;
-					color_set_one = 0;
-					while (todo.get(i).charAt(curseur) != '_') {
-						color_set_one = 10 * color_set_one + Character.getNumericValue(todo.get(i).charAt(curseur));
-						curseur++;
-					}
-					//System.out.println("color_set_one = " + color_set_one);
-					
-					// for size_two
-					curseur++;
-					size_two = 0;
-					while (todo.get(i).charAt(curseur) != '_') {
-						size_two = 10 * size_two + Character.getNumericValue(todo.get(i).charAt(curseur));
-						curseur++;
-					}
-					//System.out.println("size_two = " + size_two);
-					
-					// for color_set_two
-					curseur++;
-					color_set_two = 0;
-					while (curseur < todo.get(i).length()) {
-						color_set_two = 10 * color_set_two + Character.getNumericValue(todo.get(i).charAt(curseur));
-						curseur++;
-					}
-					//System.out.println("color_set_two = " + color_set_two);
-					
-					check = hmap.getElement(node_one, size_one, color_set_one).getPred();
-					if (check != "") {
-						new_todo.add(check);
-						//System.out.println("We add 1 : " + check);
-					}
-					check = hmap.getElement(node_one, size_two, color_set_two).getPred();
-					if (check != "") {
-						new_todo.add(check);
-						//System.out.println("We add 2 : " + check);
-					}
-					
-				}
-				// if (todo.get(i).charAt(0) == 'Z') for nodes that self-improved with a triple (node, 0,0)
-				else {
-					
-					// **************************** FIRST PART *******************************
-					
-					// for nodebase
-					curseur = 2;
-					node_one = 0;
-					while (todo.get(i).charAt(curseur) != '_') {
-						node_one = 10 * node_one + Character.getNumericValue(todo.get(i).charAt(curseur));
-						curseur++;
-					}
-					//System.out.println("node_one = " + node_one);
-					if (!nodes_sol.contains(graph.getNode(node_one))) {
-						nodes_sol.add(graph.getNode(node_one));
-					}
-					
-					
-					
-					check = hmap.getElement(node_one, 0,0).getPred();
-					if (check != "") {
-						new_todo.add(check);
-						//System.out.println("We add : " + check);
-					}
-					
-					// **************************** SECOND PART *******************************
-					
-					curseur++;
-					// Re do with X Y
-					if (todo.get(i).charAt(curseur) == 'X') {
-						
-						// for nodebase
-						curseur+=2;
-						node_one = 0;
-						while (todo.get(i).charAt(curseur) != '_') {
-							node_one = 10 * node_one + Character.getNumericValue(todo.get(i).charAt(curseur));
-							curseur++;
-						}
-						//System.out.println("node_one = " + node_one);
-						if (!nodes_sol.contains(graph.getNode(node_one))) {
-							nodes_sol.add(graph.getNode(node_one));
-						}
-						
-						// for toNode
-						curseur++;
-						node_two = 0;
-						while (todo.get(i).charAt(curseur) != '_') {
-							node_two = 10 * node_two + Character.getNumericValue(todo.get(i).charAt(curseur));
-							curseur++;
-						}
-						//System.out.println("node_two = " + node_two);
-						if (!nodes_sol.contains(graph.getNode(node_two))) {
-							nodes_sol.add(graph.getNode(node_two));
-						}
-						
-						arc = new Arc(node_one, node_two);
-						if (!arcs_sol.contains(arc)) {
-							arcs_sol.add(arc);
-							//System.out.println("Z 2 : ajout de l'arc entre " + node_one + " et " + node_two);
-						}
-						
-						// for size
-						curseur++;
-						size_one = 0;
-						while (todo.get(i).charAt(curseur) != '_') {
-							size_one = 10 * size_one + Character.getNumericValue(todo.get(i).charAt(curseur));
-							curseur++;
-						}
-						//System.out.println("size_one = " + size_one);
-						
-						// for colorset
-						curseur++;
-						color_set_one = 0;
-						while (curseur < todo.get(i).length()) {
-							color_set_one = 10 * color_set_one + Character.getNumericValue(todo.get(i).charAt(curseur));
-							curseur++;
-						}
-						//System.out.println("color_set_one = " + color_set_one);
-						
-						check = hmap.getElement(node_two, size_one, color_set_one).getPred();
-						if (check != "") {
-							new_todo.add(check);
-							//System.out.println("We add : " + check);
-						}
-						
-					}
-					// Case Y
-					else {
-						
-						// for node
-						curseur+=2;
-						node_one = 0;
-						while (todo.get(i).charAt(curseur) != '_') {
-							node_one = 10 * node_one + Character.getNumericValue(todo.get(i).charAt(curseur));
-							curseur++;
-						}
-						//System.out.println("node_one = " + node_one);
-						if (!nodes_sol.contains(graph.getNode(node_one))) {
-							nodes_sol.add(graph.getNode(node_one));
-						}
-						
-						// for size_one
-						curseur++;
-						size_one = 0;
-						while (todo.get(i).charAt(curseur) != '_') {
-							size_one = 10 * size_one + Character.getNumericValue(todo.get(i).charAt(curseur));
-							curseur++;
-						}
-						//System.out.println("size_one = " + size_one);
-						
-						// for color_set_one
-						curseur++;
-						color_set_one = 0;
-						while (todo.get(i).charAt(curseur) != '_') {
-							color_set_one = 10 * color_set_one + Character.getNumericValue(todo.get(i).charAt(curseur));
-							curseur++;
-						}
-						//System.out.println("color_set_one = " + color_set_one);
-						
-						// for size_two
-						curseur++;
-						size_two = 0;
-						while (todo.get(i).charAt(curseur) != '_') {
-							size_two = 10 * size_two + Character.getNumericValue(todo.get(i).charAt(curseur));
-							curseur++;
-						}
-						//System.out.println("size_two = " + size_two);
-						
-						// for color_set_two
-						curseur++;
-						color_set_two = 0;
-						while (curseur < todo.get(i).length()) {
-							color_set_two = 10 * color_set_two + Character.getNumericValue(todo.get(i).charAt(curseur));
-							curseur++;
-						}
-						//System.out.println("color_set_two = " + color_set_two);
-						
-						check = hmap.getElement(node_one, size_one, color_set_one).getPred();
-						if (check != "") {
-							new_todo.add(check);
-							//System.out.println("We add 1 : " + check);
-						}
-						check = hmap.getElement(node_one, size_two, color_set_two).getPred();
-						if (check != "") {
-							new_todo.add(check);
-							//System.out.println("We add 2 : " + check);
-						}
-						
-					}
-					
-					
-					
-				}
-				
+			//System.out.println("char = " + check.charAt(curseur) + " : ");
+			
+			// Changing node
+			if (check.charAt(curseur) == '-') {
+				turn = false;
 			}
 			
-			todo.clear();
-			tmp = new_todo;
-			new_todo = todo;
-			todo = tmp;
+			// ready to add node 2 and arc
+			else if (check.charAt(curseur) == '_') {
+				
+				// add node 2
+				if (!nodes_sol.contains(graph.getNode(node_two))) {
+					nodes_sol.add(graph.getNode(node_two));
+					//System.out.println("Adding node_two = " + node_two);
+				}
+				
+				// add arc
+				arcs_sol.add(new Arc(node_one, node_two));
+				//System.out.println("Adding arc from node_one = " + node_one + " to node_two = " + node_two);
+				
+				// reinitializing
+				node_one = 0;
+				node_two = 0;
+				turn = true;
+			}
 			
-			//System.out.println("Loop ending : todo.size() = " + todo.size() + " and new_todo.size() = " + new_todo.size());
+			// building node_two or node_two
+			else {
+				if (turn) {
+					node_one = 10 * node_one + Character.getNumericValue(check.charAt(curseur));
+					//System.out.println("node_one = " + node_one);
+				}
+				else {
+					node_two = 10 * node_two + Character.getNumericValue(check.charAt(curseur));
+					//System.out.println("node_two = " + node_two);
+				}
+			}
 			
+			curseur++;
 		}
+		
+		// Ending
+		// add node 2
+		if (!nodes_sol.contains(graph.getNode(node_two))) {
+			nodes_sol.add(graph.getNode(node_two));
+			//System.out.println("Adding node_two = " + node_two);
+		}
+		
+		// add arc
+		arcs_sol.add(new Arc(node_one, node_two));
+		//System.out.println("Adding arc from node_one = " + node_one + " to node_two = " + node_two);
 		
 	}
 	
