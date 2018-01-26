@@ -3,112 +3,84 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 
 
 public class Test {
-
-	/**
-	 * @param args
-	 */
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		
-		/*
-		// First, ensure there are 2 args : args[0] = c / in2 / both , args[1] = file_name
-	    if (args.length != 2) {
-	      throw new IllegalArgumentException("Exactly 2 parameters required !");
+	    
+		if (args.length != 4) {
+	      throw new IllegalArgumentException("Exactly 4 parameters required !");
 	    }
 		
-		// Variables
-		Graph graph = new Graph(args[1]);
-		//Graph graph = new Graph("Small_data_MCA/red-graphs-100-200/4.graph");
-		//Graph graph = new Graph(50,8);
+		// Goal of call : return String = where_read what_to_do n m c 
+    	//			+ running_time_c OR running_time_in 
+    	
 		
-		// Don't put more than 30 colors : 2^31 = max_int + 1
-		if (graph.getC() <= 30) {
-			
-			// if it is only asked
-			if (args[0].equals("c")) {
-				
-				MCA_instance_FPT_C instance_c = new MCA_instance_FPT_C(graph);
-				instance_c.compute();
-				double res_c = instance_c.searchBest(0).getWeight();
-				instance_c.retrieveSol();
-				instance_c.afficheSol();	
-				System.out.println("Best result with FPT C : " + res_c);
-				
-			}
-			else if (args[0].equals("in2")) {
-				
-				MCA_instance_FPT_in2 instance_i = new MCA_instance_FPT_in2(graph);
-				instance_i.short_display();
-				instance_i.compute();
-				double res_i = instance_i.searchBest(0).getWeight();
-				instance_i.retrieveSol();
-				instance_i.afficheSol();
-				System.out.println("Best result with FPT in2 : " + res_i);
-				
-			}
-			// do both
-			else {
-				
-				MCA_instance_FPT_C instance_c = new MCA_instance_FPT_C(graph);
-				MCA_instance_FPT_in2 instance_i = new MCA_instance_FPT_in2(graph);
-				
-				// display
-				instance_i.short_display();
-			
-				// Pour algo |C|
-				instance_c.compute();
-				double res_c = instance_c.searchBest(0).getWeight();
-				instance_c.retrieveSol();
-				
-				// Pour algo in2
-				instance_i.compute();
-				double res_i = instance_i.searchBest(0).getWeight();
-				instance_i.retrieveSol();
-				
-				
-				instance_c.afficheSol();
-				instance_i.afficheSol();		
-				System.out.println("Best result with FPT C : " + res_c);
-				System.out.println("Best result with FPT in2 : " + res_i);
-			}
-			
-			
-			
+		// Final settings
+		String where_read = args[0];
+		String where_write = args[1];
+		String what_to_do = args[2];            // => Only c or in2 => NOT BOTH (better to have separate data in case one fails timelimit)
+		int time_solve_seconds = Integer.valueOf(args[3]);
 		
-		}
-		else {
-			System.out.println("Current algorithms can not handle more than 30 colors.");
-		}
-		
-		*/
+		/* Test settings
+		String where_read = "Small_data_MCA/red-graphs-100-200/4.graph";
+		String where_write = "truc";
+		String what_to_do = "in2";
+		int time_solve_seconds = 3;*/
 		
 		
 		
+		// Dealing with "threads" for time limit
+		ExecutorService executor = Executors.newSingleThreadExecutor();
 		
-		String file = "truc";
-		StringBuffer myChain = new StringBuffer("");
+		Task myTask = new Task(what_to_do, where_read);
 		
-		FileOutputStream fw = null;
-	    BufferedWriter bw = null;
+        Future<String> future = executor.submit(myTask);
 
+        try {
+            //System.out.println("Started..");
+            System.out.println(future.get(time_solve_seconds, TimeUnit.SECONDS));
+            //System.out.println("Finished!");
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            //System.out.println("Terminated!");
+        }
+        
+        executor.shutdownNow();
+        
+        
+        
+        // System.out.println("Value sol = " + myTask.getMyChain());
+        
+        // Result to return
+     	StringBuffer return_this = new StringBuffer("");
+     	return_this.append(where_read);
+     	return_this.append(' ');
+     	return_this.append(what_to_do);
+     	return_this.append(' ');
+        return_this.append(myTask.getMyChain());
+        return_this.append('\n');
+        
+        FileOutputStream fw = null;
+	    BufferedWriter bw = null;
+	    
+	    // Recopier infos importantes
 		try {
 
-			int a = 3;
-			double b = 3.254;
-			myChain.append(a);
-			myChain.append(' ');
-			myChain.append(b);
-			myChain.append('\n');
-			
-			fw = new FileOutputStream(file, true);
+			fw = new FileOutputStream(where_write, true);
 			bw = new BufferedWriter(new OutputStreamWriter(fw));
 		    
-			bw.write(myChain.toString());
+			bw.write(return_this.toString());
 
-			System.out.println("Done");
+			//System.out.println("Done");
 
 		} catch (IOException e) {
 
@@ -134,8 +106,19 @@ public class Test {
 		
 		
 		
+		/*Graph graph = new Graph(50,8);
 		
+		MCA_instance_FPT_C instance_c = new MCA_instance_FPT_C(graph);
+		instance_c.compute();
+		double res_c = instance_c.searchBest(0).getWeight();
 		
+		MCA_instance_FPT_in2 instance_i = new MCA_instance_FPT_in2(graph);
+		instance_i.compute();
+		double res_i = instance_i.searchBest(0).getWeight();
+		
+		System.out.println("c : " + res_c);
+		System.out.println("i : " + res_i);*/
+        
 		
 		
 		

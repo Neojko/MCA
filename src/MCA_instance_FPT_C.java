@@ -60,14 +60,37 @@ public class MCA_instance_FPT_C extends MCA_instance {
 			//System.out.println("-------------------------------------------------------");
 			//System.out.println("current_node = " + current_node);
 			
+			/************* For respecting time limit *************/
+			if (Thread.interrupted()) {
+    			Thread.currentThread().interrupt();
+    			break;
+    		}
+			/************* For respecting time limit *************/
+			
 			if (graph.getNbOutneighbors(current_node) > 0) {
 				// For each size between 2 and c
 				for (int current_size = 2; current_size < graph.getC()+1; current_size++) {
+					
+					/************* For respecting time limit *************/
+					if (Thread.interrupted()) {
+		    			Thread.currentThread().interrupt();
+		    			break;
+		    		}
+					/************* For respecting time limit *************/
+					
 					//System.out.println("-------- current_size = " + current_size);
 					//System.out.println();
 					
 					// For each outneighbor of current_node
 					for (int u = 0; u < graph.getNbOutneighbors(current_node); u++) {
+						
+						/************* For respecting time limit *************/
+						if (Thread.interrupted()) {
+			    			Thread.currentThread().interrupt();
+			    			break;
+			    		}
+						/************* For respecting time limit *************/
+						
 						//System.out.println(current_node + " has outneighbor " + outneighbors[current_node][u]);
 						num_outneighbor = graph.getOutneighbors(current_node,u);
 						
@@ -85,6 +108,14 @@ public class MCA_instance_FPT_C extends MCA_instance {
 								
 								// For all color sets of size current_size-1 of node u
 								for (Map.Entry<Integer, Paire> entry : innermap_size.entrySet()) {
+									
+									/************* For respecting time limit *************/
+									if (Thread.interrupted()) {
+						    			Thread.currentThread().interrupt();
+						    			break;
+						    		}
+									/************* For respecting time limit *************/
+									
 					            	Integer color_set = entry.getKey();
 					            	Paire value = entry.getValue();
 					            	
@@ -137,6 +168,14 @@ public class MCA_instance_FPT_C extends MCA_instance {
 					// Second part of the equation
 					// Searching subsets s_one
 					for (int sub_cur_size = 1; sub_cur_size < current_size; sub_cur_size++) {
+						
+						/************* For respecting time limit *************/
+						if (Thread.interrupted()) {
+			    			Thread.currentThread().interrupt();
+			    			break;
+			    		}
+						/************* For respecting time limit *************/
+						
 						//System.out.println("sub_cur_size = " + sub_cur_size);
 						
 						// Get part of the table for node current_node
@@ -149,6 +188,14 @@ public class MCA_instance_FPT_C extends MCA_instance {
 								
 								// For all color sets s_one of size sub_cur_size of node current_node
 								for (Map.Entry<Integer, Paire> entry_one : innermap_size.entrySet()) {
+									
+									/************* For respecting time limit *************/
+									if (Thread.interrupted()) {
+						    			Thread.currentThread().interrupt();
+						    			break;
+						    		}
+									/************* For respecting time limit *************/
+									
 					            	Integer s_one = entry_one.getKey();
 					            	Paire value_s_one = entry_one.getValue();
 					            	
@@ -162,6 +209,14 @@ public class MCA_instance_FPT_C extends MCA_instance {
 										
 										// For all color sets s_two of size (current_size - sub_cur_size +1) of node current_node
 										for (Map.Entry<Integer, Paire> entry_two : innermap_size2.entrySet()) {
+											
+											/************* For respecting time limit *************/
+											if (Thread.interrupted()) {
+								    			Thread.currentThread().interrupt();
+								    			break;
+								    		}
+											/************* For respecting time limit *************/
+											
 							            	Integer s_two = entry_two.getKey();
 							            	Paire value_s_two = entry_two.getValue();
 							            	

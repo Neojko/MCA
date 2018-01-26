@@ -129,6 +129,14 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 		// Going from node n-1 to node 0 ensures that all outneighbors of current_node have already been computed thanks to color hierarchy
 		// Indeed we can start at node n - number_leaves
 		for (int v = graph.getN()-1; v > -1; v--) {
+			
+			/************* For respecting time limit *************/
+			if (Thread.interrupted()) {
+    			Thread.currentThread().interrupt();
+    			break;
+    		}
+			/************* For respecting time limit *************/
+			
 			current_node  = graph.getNode(v).getNumero();
 			//System.out.println("-------------------------------------------------------");
 			//System.out.println("current_node = " + graph.getNode(current_node).getNumero());
@@ -139,6 +147,13 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 				// For each color in the outneighborhood of current_node
 				for (int index_c = 0; index_c < nb_Col_out_nei[current_node]; index_c ++) {
 					
+					/************* For respecting time limit *************/
+					if (Thread.interrupted()) {
+		    			Thread.currentThread().interrupt();
+		    			break;
+		    		}
+					/************* For respecting time limit *************/
+					
 					c = col_out_nei[current_node][index_c];
 					//System.out.println("--- Working on color " + c + " (not in X)");
 					//System.out.println("--- FIRST PART");
@@ -146,6 +161,13 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 					
 					// For each outneighbor of current_node
 					for (int u = 0; u < graph.getNbOutneighbors(current_node); u++) {
+						
+						/************* For respecting time limit *************/
+						if (Thread.interrupted()) {
+			    			Thread.currentThread().interrupt();
+			    			break;
+			    		}
+						/************* For respecting time limit *************/
 						
 						num_outneighbor = graph.getOutneighbors(current_node,u);
 						
@@ -158,6 +180,13 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 					
 							// For each size between 0 and |X|
 							for (int current_size = 0; current_size <= intwo.size(); current_size++) {
+								
+								/************* For respecting time limit *************/
+								if (Thread.interrupted()) {
+					    			Thread.currentThread().interrupt();
+					    			break;
+					    		}
+								/************* For respecting time limit *************/
 								
 								//System.out.println("--------- current_size = " + current_size);
 
@@ -175,6 +204,13 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 										
 										// For all color sets of size current_size of node u
 										for (Map.Entry<Integer, Triple> entry : innermap_size.entrySet()) {
+											
+											/************* For respecting time limit *************/
+											if (Thread.interrupted()) {
+								    			Thread.currentThread().interrupt();
+								    			break;
+								    		}
+											/************* For respecting time limit *************/
 											
 											Integer color_set = entry.getKey();
 							            	Triple value = entry.getValue();
@@ -259,6 +295,13 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 						// For each size between 0 and |X|
 						for (int size_one = 0; size_one <= intwo.size(); size_one++) {
 							
+							/************* For respecting time limit *************/
+							if (Thread.interrupted()) {
+				    			Thread.currentThread().interrupt();
+				    			break;
+				    		}
+							/************* For respecting time limit *************/
+							
 							//System.out.println("------ size_one = " + size_one);
 							
 							// Get part of the table for color sets of size size_one
@@ -268,12 +311,30 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 								
 								// For all color sets s_one of size size_one of node current_node
 								for (Map.Entry<Integer, Triple> entry_one : innermap_size.entrySet()) {
+									
+									/************* For respecting time limit *************/
+									if (Thread.interrupted()) {
+						    			Thread.currentThread().interrupt();
+						    			break;
+						    		}
+									/************* For respecting time limit *************/
+									
+									
 					            	Integer s_one = entry_one.getKey();
 					            	Triple value_s_one = entry_one.getValue();
 					            	
 					            	//System.out.println("--------- s_one = " + s_one + " de Triple " + value_s_one);
 					            	
 					            	for (int size_two = 0; size_two <= intwo.size() - size_one; size_two++) {
+					            		
+					            		
+					            		/************* For respecting time limit *************/
+										if (Thread.interrupted()) {
+							    			Thread.currentThread().interrupt();
+							    			break;
+							    		}
+										/************* For respecting time limit *************/
+										
 										
 										//System.out.println("------------ size_two = " + size_two );
 					            		
@@ -285,6 +346,14 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 											
 											// For all color sets s_two of size (size_two) of node current_node
 											for (Map.Entry<Integer, Triple> entry_two : innermap_size2.entrySet()) {
+												
+												/************* For respecting time limit *************/
+												if (Thread.interrupted()) {
+									    			Thread.currentThread().interrupt();
+									    			break;
+									    		}
+												/************* For respecting time limit *************/
+												
 								            	Integer s_two = entry_two.getKey();
 								            	Triple value_s_two = entry_two.getValue();
 								            	
@@ -351,6 +420,7 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 					} // end if part hmap node is ok
 					//System.out.println();
 					
+					
 					/****** AJOUTER TOUTES LES NOUVELLES ENTREES A HMAP ET CLEAR LA NOUVELLE ******/
 					hmap.complete_hmap(final_hmap);
 					hmap.complete_hmap(new_hmap);
@@ -365,7 +435,6 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 					System.out.println("Affichage final_hmap");
 					final_hmap.display2();
 					System.out.println();*/
-					
 					
 					
 				} // end for each color
