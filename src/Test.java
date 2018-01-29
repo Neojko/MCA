@@ -15,8 +15,7 @@ public class Test {
 	
 	public static void main(String[] args) throws Exception {
 		
-	    
-		if (args.length != 4) {
+	    if (args.length != 4) {
 	      throw new IllegalArgumentException("Exactly 4 parameters required !");
 	    }
 		
@@ -30,12 +29,11 @@ public class Test {
 		String what_to_do = args[2];            // => Only c or in2 => NOT BOTH (better to have separate data in case one fails timelimit)
 		int time_solve_seconds = Integer.valueOf(args[3]);
 		
-		/* Test settings
+		/* Test settings *
 		String where_read = "Small_data_MCA/red-graphs-100-200/4.graph";
 		String where_write = "truc";
 		String what_to_do = "in2";
 		int time_solve_seconds = 3;*/
-		
 		
 		
 		// Dealing with "threads" for time limit
@@ -104,8 +102,6 @@ public class Test {
 
 		}
 		
-		
-		
 		/*Graph graph = new Graph(50,8);
 		
 		MCA_instance_FPT_C instance_c = new MCA_instance_FPT_C(graph);
@@ -117,7 +113,11 @@ public class Test {
 		double res_i = instance_i.searchBest(0).getWeight();
 		
 		System.out.println("c : " + res_c);
-		System.out.println("i : " + res_i);*/
+		System.out.println("i : " + res_i);
+		System.out.println();
+		*/
+		
+		
         
 		
 		

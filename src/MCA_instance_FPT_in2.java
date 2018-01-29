@@ -144,6 +144,12 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 			
 			if (graph.getNbOutneighbors(current_node) > 0) {
 				
+				
+				// Neighbors are sorted by color
+				int u = 0; // cpt outneighbors
+				num_outneighbor = graph.getOutneighbors(current_node,u);
+				
+				
 				// For each color in the outneighborhood of current_node
 				for (int index_c = 0; index_c < nb_Col_out_nei[current_node]; index_c ++) {
 					
@@ -157,10 +163,11 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 					c = col_out_nei[current_node][index_c];
 					//System.out.println("--- Working on color " + c + " (not in X)");
 					//System.out.println("--- FIRST PART");
-
 					
-					// For each outneighbor of current_node
-					for (int u = 0; u < graph.getNbOutneighbors(current_node); u++) {
+					
+					
+					// For each outneighbor of color c
+					while ( (u < graph.getNbOutneighbors(current_node)) && (graph.getNode(num_outneighbor).getColor() == c) ) {
 						
 						/************* For respecting time limit *************/
 						if (Thread.interrupted()) {
@@ -169,113 +176,113 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 			    		}
 						/************* For respecting time limit *************/
 						
+						//System.out.println("------" + current_node + " has outneighbor " + num_outneighbor + " of color " + c);
+						
+						// For each size between 0 and |X|
+						for (int current_size = 0; current_size <= intwo.size(); current_size++) {
+							
+							/************* For respecting time limit *************/
+							if (Thread.interrupted()) {
+				    			Thread.currentThread().interrupt();
+				    			break;
+				    		}
+							/************* For respecting time limit *************/
+							
+							//System.out.println("--------- current_size = " + current_size);
+
+							// Get part of the table for node u
+							innermap_node = hmap.getPartSize(Integer.valueOf(num_outneighbor));
+							if (innermap_node != null) {
+								//System.out.println("innermap_node display : ");
+								//innermap_node.display();
+								
+								// Get part of the table for color sets of size current_size
+								innermap_size = innermap_node.getHashMap(Integer.valueOf(current_size));
+								
+								if (innermap_size != null) {
+									//System.out.println(innermap_size);
+									
+									// For all color sets of size current_size of node u
+									for (Map.Entry<Integer, Triple> entry : innermap_size.entrySet()) {
+										
+										/************* For respecting time limit *************/
+										if (Thread.interrupted()) {
+							    			Thread.currentThread().interrupt();
+							    			break;
+							    		}
+										/************* For respecting time limit *************/
+										
+										Integer color_set = entry.getKey();
+						            	Triple value = entry.getValue();
+						            	
+						            	// use key and value
+						                //System.out.println("------------ For color set " + color_set + " of weight " + value.getWeight() + " :");
+						                first = value.getWeight() + graph.getWeight_outneighbors(current_node,u);
+						                
+						                // if c does not belong to X
+										if (!intwo.contains(c)) {
+											var_size = current_size;
+											var_col = color_set;
+										}
+										else {
+											var_size = current_size + 1;
+											var_col = color_set + graph.getNode(num_outneighbor).getColor();
+										}
+						                
+										second = new_hmap.getElement(Integer.valueOf(graph.getNode(current_node).getNumero()), Integer.valueOf(var_size), 
+					                			Integer.valueOf(var_col));
+										
+										//System.out.println("------------ first = " + first + " and second = " + second);
+						                
+						                if ( ( (second == null) || (first > second.getWeight()) ) && ( first > 0 ) ) {
+						                	toAdd.setLength(0);
+						                	toAdd.append(String.valueOf(graph.getNode(num_outneighbor).getColor()));
+						                	
+						                	pred.setLength(0);
+						                	pred.append(String.valueOf(current_node) + '-' + String.valueOf(num_outneighbor));
+						                	if (value.getPred() != "") {
+						                		pred.append('_' + value.getPred());
+						                	}
+						                	
+						                	
+						                	new_hmap.addElement(Integer.valueOf(graph.getNode(current_node).getNumero()), Integer.valueOf(var_size), 
+						                			Integer.valueOf(var_col), new Triple(toAdd.toString(),first, pred.toString()));
+							                
+							                /*System.out.print("New entry A (new_hmap): ");
+							                System.out.print("node = " + current_node);
+							                System.out.print(", size = " + var_size);
+							                System.out.print(", color_set = " + var_col);
+							                System.out.print(", Triple.out : " + toAdd);
+							                System.out.print(", Triple.weight : " + first);
+							                System.out.println(", Triple.pred = " + pred);
+							                System.out.println();*/
+						                }
+						                
+						            }
+									
+									
+									
+								}
+								/*else {
+									System.out.println("No innermap_size for size " + (current_size-1) );
+									System.out.println();
+								}*/
+								
+							}
+							else {
+								System.out.println("CODE PROBLEM : no innermap_node.");
+								System.out.println();
+							}
+						} // end for each size
+						
+						
+						
+						// Next outneighbor
+						u++;
 						num_outneighbor = graph.getOutneighbors(current_node,u);
 						
-						
-						// vertex u must be of color c
-						if (graph.getNode(num_outneighbor).getColor() == c) {
-							
-							//System.out.println("------" + current_node + " has outneighbor " + num_outneighbor + " of color " + c);
-							
+					}
 					
-							// For each size between 0 and |X|
-							for (int current_size = 0; current_size <= intwo.size(); current_size++) {
-								
-								/************* For respecting time limit *************/
-								if (Thread.interrupted()) {
-					    			Thread.currentThread().interrupt();
-					    			break;
-					    		}
-								/************* For respecting time limit *************/
-								
-								//System.out.println("--------- current_size = " + current_size);
-
-								// Get part of the table for node u
-								innermap_node = hmap.getPartSize(Integer.valueOf(num_outneighbor));
-								if (innermap_node != null) {
-									//System.out.println("innermap_node display : ");
-									//innermap_node.display();
-									
-									// Get part of the table for color sets of size current_size
-									innermap_size = innermap_node.getHashMap(Integer.valueOf(current_size));
-									
-									if (innermap_size != null) {
-										//System.out.println(innermap_size);
-										
-										// For all color sets of size current_size of node u
-										for (Map.Entry<Integer, Triple> entry : innermap_size.entrySet()) {
-											
-											/************* For respecting time limit *************/
-											if (Thread.interrupted()) {
-								    			Thread.currentThread().interrupt();
-								    			break;
-								    		}
-											/************* For respecting time limit *************/
-											
-											Integer color_set = entry.getKey();
-							            	Triple value = entry.getValue();
-							            	
-							            	// use key and value
-							                //System.out.println("------------ For color set " + color_set + " of weight " + value.getWeight() + " :");
-							                first = value.getWeight() + graph.getWeight_outneighbors(current_node,u);
-							                
-							                // if c does not belong to X
-											if (!intwo.contains(c)) {
-												var_size = current_size;
-												var_col = color_set;
-											}
-											else {
-												var_size = current_size + 1;
-												var_col = color_set + graph.getNode(num_outneighbor).getColor();
-											}
-							                
-											second = new_hmap.getElement(Integer.valueOf(graph.getNode(current_node).getNumero()), Integer.valueOf(var_size), 
-						                			Integer.valueOf(var_col));
-											
-											//System.out.println("------------ first = " + first + " and second = " + second);
-							                
-							                if ( ( (second == null) || (first > second.getWeight()) ) && ( first > 0 ) ) {
-							                	toAdd.setLength(0);
-							                	toAdd.append(String.valueOf(graph.getNode(num_outneighbor).getColor()));
-							                	
-							                	pred.setLength(0);
-							                	pred.append(String.valueOf(current_node) + '-' + String.valueOf(num_outneighbor));
-							                	if (value.getPred() != "") {
-							                		pred.append('_' + value.getPred());
-							                	}
-							                	
-							                	
-							                	new_hmap.addElement(Integer.valueOf(graph.getNode(current_node).getNumero()), Integer.valueOf(var_size), 
-							                			Integer.valueOf(var_col), new Triple(toAdd.toString(),first, pred.toString()));
-								                
-								                /*System.out.print("New entry A (new_hmap): ");
-								                System.out.print("node = " + current_node);
-								                System.out.print(", size = " + var_size);
-								                System.out.print(", color_set = " + var_col);
-								                System.out.print(", Triple.out : " + toAdd);
-								                System.out.print(", Triple.weight : " + first);
-								                System.out.println(", Triple.pred = " + pred);
-								                System.out.println();*/
-							                }
-							                
-							            }
-										
-										
-										
-									}
-									/*else {
-										System.out.println("No innermap_size for size " + (current_size-1) );
-										System.out.println();
-									}*/
-									
-								}
-								else {
-									System.out.println("CODE PROBLEM : no innermap_node.");
-									System.out.println();
-								}
-							} // end for each size
-						}// end if neighbor has color c
-					} // end for each outneighbor
 					
 					
 					// Second part of the equation

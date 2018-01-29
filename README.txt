@@ -8,3 +8,7 @@ where :
 - what_to_do = c or in2 according to the algorithm you want to execute.
 - time_limit_seconds is .. the timeout for the algorithm in seconds.
 
+PRECONDITIONS : 
+- No more than 30 colors
+- Outneighbors of each vertex are sorted by color (no vertex of color red between two vertices of color blue) => gain factor |c|
+
