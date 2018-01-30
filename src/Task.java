@@ -49,7 +49,6 @@ class Task implements Callable<String> {
 		myChain.append(graph.give_intwo());
 		myChain.append(' ');
 		myChain.append(type_algo);
-		myChain.append(' ');
 		
 		if (graph.is_created()) {
 			
@@ -70,6 +69,7 @@ class Task implements Callable<String> {
 						//instance_c.afficheSol();	
 						//System.out.println("Best result with FPT C : " + res_c);
 						
+						myChain.append(' ');
 						myChain.append(res_c);
 		    		}
 					/************* For respecting time limit *************/
@@ -91,6 +91,7 @@ class Task implements Callable<String> {
 						//instance_i.afficheSol();
 						//System.out.println("Best result with FPT in2 : " + res_i);
 						
+						myChain.append(' ');
 						myChain.append(res_i);
 		    		}
 					/************* For respecting time limit *************/
@@ -105,8 +106,6 @@ class Task implements Callable<String> {
 			
 			
 		} // end if graph_created
-    	
-		myChain.append('\n');
         
         return myChain.toString();
     }
