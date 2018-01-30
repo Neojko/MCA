@@ -4,19 +4,26 @@ import java.util.concurrent.Callable;
 class Task implements Callable<String> {
 	
 	// Variables
-	String type_algo, file_name;
-	String myChain;
+	static String type_algo, file_name;
 	
 	// Constructor
 	public Task(String what_to_do, String where_read) {
 		super();
 		type_algo = what_to_do;
 		file_name = where_read;
-		myChain = "";
 	}
 	
-	public String getMyChain() {
-		return myChain;
+	static public String get_basename_instance() {
+		
+		// Search last '/' in the String
+		int pos = file_name.lastIndexOf("/");
+		
+		if (pos != file_name.length()-1) {
+			return file_name.substring(pos+1);
+		}
+		else {
+			return file_name;
+		}
 	}
 
 
@@ -29,6 +36,20 @@ class Task implements Callable<String> {
     	// Variables
 		Graph graph = new Graph(file_name);
 		//Graph graph = new Graph(50,8);
+		
+		StringBuffer myChain = new StringBuffer("");
+		myChain.append(get_basename_instance());
+		myChain.append(' ');
+		myChain.append(graph.getN());
+		myChain.append(' ');
+		myChain.append(graph.getM());
+		myChain.append(' ');
+		myChain.append(graph.getC());
+		myChain.append(' ');
+		myChain.append(graph.give_intwo());
+		myChain.append(' ');
+		myChain.append(type_algo);
+		myChain.append(' ');
 		
 		if (graph.is_created()) {
 			
@@ -49,7 +70,7 @@ class Task implements Callable<String> {
 						//instance_c.afficheSol();	
 						//System.out.println("Best result with FPT C : " + res_c);
 						
-						myChain = String.valueOf(res_c);
+						myChain.append(res_c);
 		    		}
 					/************* For respecting time limit *************/
 					
@@ -70,7 +91,7 @@ class Task implements Callable<String> {
 						//instance_i.afficheSol();
 						//System.out.println("Best result with FPT in2 : " + res_i);
 						
-						myChain = String.valueOf(res_i);
+						myChain.append(res_i);
 		    		}
 					/************* For respecting time limit *************/
 					
@@ -79,16 +100,14 @@ class Task implements Callable<String> {
 				
 			}
 			else {
-				System.out.println("Current algorithms can not handle more than 30 colors.");
+				//System.out.println("Current algorithms can not handle more than 30 colors.");
 			}
 			
 			
 		} // end if graph_created
     	
-    	
-		//System.out.println("call() fini !");
+		myChain.append('\n');
         
-        return "";
-        //return "Ready!";
+        return myChain.toString();
     }
 }

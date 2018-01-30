@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ "$#" -ne 4 ]; then
+  echo "Probleme dans run_mca"
+  exit 1
+fi
+
+echo $(basename $1)
+
+java -jar mca.jar $1 $2 $3 $4

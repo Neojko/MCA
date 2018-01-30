@@ -292,6 +292,52 @@ public class Graph {
 		
 	}
 	
+	public int give_intwo() {
+		
+		int[] res = new int[c];
+		int intwo = 0;
+		int color_index, color_pow;
+		
+		// Initialization
+		for (int i = 0; i < c; i++) {
+			res[i] = -1;
+		}
+		
+		for (int i = 0; i < n; i++) {
+			//System.out.println("i = " + i + ", couleur de i = " + nodeList.get(i).getColor() + " and jmax = " + nbOutneighbors[nodeList.get(i).getNumero()]);
+			
+			for (int j = 0; j < nbOutneighbors[nodeList.get(i).getNumero()]; j++) {
+				
+				// Vertex true color
+				color_pow = nodeList.get(outneighbors[i][j]).getColor();
+				// Index in table of vertex true color
+				color_index = (int)(Math.log(color_pow) / Math.log(2.0));
+				
+				//System.out.println("--- j = " + j + ", color_index = " + color_index + " and color_pow = " + color_pow);
+				
+				// if no color yet
+				if (res[color_index] == -1) {
+					res[color_index] = nodeList.get(i).getColor();
+					//System.out.println("------ Pas d'innei deja entre pour la couleur " + color_pow + ", on ajoute la couleur de i.");
+					
+				}
+				// if not same color and not already X color
+				else if ( (res[color_index] != -2) && (res[color_index] != nodeList.get(i).getColor()) ) {
+					
+					//System.out.println("------ La couleur " + color_pow + " avait deja la couleur " + res[color_index] + " d'entree, on la rajoute a intwo.");
+					
+					intwo++;
+					res[color_index] = -2;
+				}
+				
+			}
+			
+		}
+		
+		return intwo;
+		
+	}
+	
 	public void compute_col_out_nei(int[][] col, int[] nb) {
 		
 		// For all vertices
