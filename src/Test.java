@@ -16,52 +16,81 @@ public class Test {
 	
 	public static void main(String[] args) throws Exception {
 		
-	    if (args.length != 4) {
+		// Start measuring time
+		long lStartTime = System.nanoTime();
+	    
+		if (args.length != 4) {
 	      throw new IllegalArgumentException("Exactly 4 parameters required !");
 	    }
-    	
+	    
 		// Variables
 		String where_read = args[0];
 		String where_write = args[1];
-		String what_to_do = args[2];            // => Only c or in2 => NOT BOTH (better to have separate data in case one fails timelimit)
-		int time_solve_seconds = Integer.valueOf(args[3]);
+		String what_to_do = args[2];
+		long time_solve_seconds = Integer.valueOf(args[3]);
 		
-		/* Use it when too lazy to make a .jar to check if modified things are ok *
+		/* Use it when too lazy to make a .jar to check if modified things are ok
 		String where_read = "Small_data_MCA/red-graphs-100-200/4.graph";
 		String where_write = "truc";
-		String what_to_do = "in2";
-		int time_solve_seconds = 3;*/
+		String what_to_do = "c";
+		long time_solve_seconds = 3L;*/
 		
-		StringBuffer result =  new StringBuffer("");
-        long lStartTime = System.nanoTime();
-		
-		// Dealing with "threads" for time limit
-		ExecutorService executor = Executors.newSingleThreadExecutor();
-		Task myTask = new Task(what_to_do, where_read);
-		Future<String> future = executor.submit(myTask);
-
-        try {
-            //System.out.println("Started..");
-        	result.append(future.get(time_solve_seconds, TimeUnit.SECONDS));
-            //System.out.println("Finished!");
-        } catch (TimeoutException e) {
-            future.cancel(true);
-            //System.out.println("Terminated!");
-        }
+        // Building graph
+        Graph graph = new Graph(where_read);
         
-        executor.shutdownNow();
+        // Filling output
+        StringBuffer output =  new StringBuffer(get_basename_instance(where_read));
+        output.append(' ');
+        output.append(graph.getN());
+        output.append(' ');
+        output.append(graph.getM());
+        output.append(' ');
+        output.append(graph.getC());
+        output.append(' ');
+        output.append(graph.give_intwo());
+        //output.append(' ');
+        //output.append(what_to_do);
+        
+        
+        // PRE : algo can not handle graphs containing more than 30 colors
+        if ( (graph.is_created()) && (graph.getC() <= 30) ) {
+        	
+        	// Dealing with "threads" for time limit
+    		ExecutorService executor = Executors.newSingleThreadExecutor();
+    		Task myTask = new Task(graph, what_to_do);
+    		Future<String> future = executor.submit(myTask);
+
+            try {
+                // add weight_sol to output if solution has been solved
+            	output.append( future.get(time_solve_seconds*1000-20, TimeUnit.MILLISECONDS) );
+            	
+            } catch (TimeoutException e) {
+                future.cancel(true);;
+            }
+            
+            executor.shutdownNow();
+        	
+        }
         
         // Get time which is spent to solve instance
         long lEndTime = System.nanoTime();
-        long output = lEndTime - lStartTime;
+        long output_time = lEndTime - lStartTime;
         
-        // Add it to result without too much precision.
-        result.append(' ');
-        result.append(to_seconds(output));
-        result.append('\n');
+		
+        // Add -1 to result if no solution found
+        String[] word_sep = output.toString().split("\\s+");
+        if (word_sep.length < 6) {
+        	output.append(" -1");
+        }
+        
+        // Add time to result in seconds + 3 decimals
+        output.append(' ');
+        output.append(nano_to_sec(output_time));
+        output.append('\n');
         
         
-        // Writing results in file
+        
+        // Writing results in file where_write
         FileOutputStream fw = null;
 	    BufferedWriter bw = null;
 	    
@@ -70,7 +99,7 @@ public class Test {
 			fw = new FileOutputStream(where_write, true);
 			bw = new BufferedWriter(new OutputStreamWriter(fw));
 		    
-			bw.write(result.toString());
+			bw.write(output.toString());
 
 			//System.out.println("Done");
 
@@ -99,7 +128,7 @@ public class Test {
 	}
 	
 	
-	public static StringBuffer to_seconds(long x) {
+	public static StringBuffer nano_to_sec(long x) {
 		String x_s = String.valueOf(x);
 		StringBuffer res = new StringBuffer("");
 		int i;
@@ -127,6 +156,19 @@ public class Test {
 		}
 		
 		return res;
+	}
+	
+	public static String get_basename_instance(String file_name) {
+		
+		// Search last '/' in the String
+		int pos = file_name.lastIndexOf("/");
+		
+		if (pos != file_name.length()-1) {
+			return file_name.substring(pos+1);
+		}
+		else {
+			return file_name;
+		}
 	}
 
 }

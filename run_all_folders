@@ -13,13 +13,13 @@ for i in $1/* ; do
     if [[ ${file:0:3} =~ "gra" ]]; then 
     
       #graph directory
-      bash run_folder $i $2/$file  $3 $4
+      bash run_folder $i "$2/$3_$file" $3 $4
       
     else 
       if [[ ${file:0:3} =~ "red" ]]; then
       
         #red graph directory
-        bash run_folder $i $2/$file  $3 $4
+        bash run_folder $i "$2/$3_$file" $3 $4
         
       fi
     fi

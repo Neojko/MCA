@@ -287,109 +287,109 @@ public class MCA_instance_FPT_C extends MCA_instance {
 	
 	
 	// Search best weight for a vertex
-		public Paire searchBest(Integer i) {
+	public Paire searchBest(Integer i) {
+		
+		double res = -1;
+		Paire best = hmap.getOuterMap().get(i).getElement(0, 0);
+		
+		HashMap2DG<Integer, Integer, Paire> hmap2d = hmap.getOuterMap().get(i);
+	       
+	       
+		for (Map.Entry<Integer,HashMap<Integer, Paire>> entry : hmap2d.getOuterMap().entrySet()) {
+			
+	           HashMap<Integer, Paire> value = entry.getValue();
+	           
+	           //System.out.println("For size " + key + " : ");
+	           
+	           for (Map.Entry<Integer, Paire> entrybis : value.entrySet()) {
+	           	
+	           	Paire valuebis = entrybis.getValue();
+	           	
+	           	if (valuebis.getWeight() > res) {
+	           		res = valuebis.getWeight();
+	           		best = valuebis;
+	           	}
+	            	
+	           }
+	            
+	       }
+		return best;
+		
+	}
+
+
+	public void retrieveSol() {		
+		
+		nodes_sol = new ArrayList<Node>();
+		arcs_sol = new ArrayList<Arc>();
+		
+		String check = searchBest(0).getPred();
+		//System.out.println(check);
+		
+		int curseur = 0;
+		boolean turn = true;
+		int node_one = 0;
+		int node_two = 0;
+		
+		// Add root
+		nodes_sol.add(graph.getNode(node_one));
+		
+		// String looking like node1-node2_node1-node2 ..
+		while (curseur < check.length()) {
+			
+			//System.out.println("char = " + check.charAt(curseur) + " : ");
+			
+			// Changing node
+			if (check.charAt(curseur) == '-') {
+				turn = false;
+			}
+			
+			// ready to add node 2 and arc
+			else if (check.charAt(curseur) == '_') {
 				
-			double res = -1;
-			Paire best = hmap.getOuterMap().get(i).getElement(0, 0);
-			
-			HashMap2DG<Integer, Integer, Paire> hmap2d = hmap.getOuterMap().get(i);
-		       
-		       
-			for (Map.Entry<Integer,HashMap<Integer, Paire>> entry : hmap2d.getOuterMap().entrySet()) {
-				
-		           HashMap<Integer, Paire> value = entry.getValue();
-		           
-		           //System.out.println("For size " + key + " : ");
-		           
-		           for (Map.Entry<Integer, Paire> entrybis : value.entrySet()) {
-		           	
-		           	Paire valuebis = entrybis.getValue();
-		           	
-		           	if (valuebis.getWeight() > res) {
-		           		res = valuebis.getWeight();
-		           		best = valuebis;
-		           	}
-		            	
-		           }
-		            
-		       }
-			return best;
-			
-		}
-	
-	
-		public void retrieveSol() {		
-			
-			nodes_sol = new ArrayList<Node>();
-			arcs_sol = new ArrayList<Arc>();
-			
-			String check = searchBest(0).getPred();
-			//System.out.println(check);
-			
-			int curseur = 0;
-			boolean turn = true;
-			int node_one = 0;
-			int node_two = 0;
-			
-			// Add root
-			nodes_sol.add(graph.getNode(node_one));
-			
-			// String looking like node1-node2_node1-node2 ..
-			while (curseur < check.length()) {
-				
-				//System.out.println("char = " + check.charAt(curseur) + " : ");
-				
-				// Changing node
-				if (check.charAt(curseur) == '-') {
-					turn = false;
+				// add node 2
+				if (!nodes_sol.contains(graph.getNode(node_two))) {
+					nodes_sol.add(graph.getNode(node_two));
+					//System.out.println("Adding node_two = " + node_two);
 				}
 				
-				// ready to add node 2 and arc
-				else if (check.charAt(curseur) == '_') {
-					
-					// add node 2
-					if (!nodes_sol.contains(graph.getNode(node_two))) {
-						nodes_sol.add(graph.getNode(node_two));
-						//System.out.println("Adding node_two = " + node_two);
-					}
-					
-					// add arc
-					arcs_sol.add(new Arc(node_one, node_two));
-					//System.out.println("Adding arc from node_one = " + node_one + " to node_two = " + node_two);
-					
-					// reinitializing
-					node_one = 0;
-					node_two = 0;
-					turn = true;
-				}
+				// add arc
+				arcs_sol.add(new Arc(node_one, node_two));
+				//System.out.println("Adding arc from node_one = " + node_one + " to node_two = " + node_two);
 				
-				// building node_two or node_two
+				// reinitializing
+				node_one = 0;
+				node_two = 0;
+				turn = true;
+			}
+			
+			// building node_two or node_two
+			else {
+				if (turn) {
+					node_one = 10 * node_one + Character.getNumericValue(check.charAt(curseur));
+					//System.out.println("node_one = " + node_one);
+				}
 				else {
-					if (turn) {
-						node_one = 10 * node_one + Character.getNumericValue(check.charAt(curseur));
-						//System.out.println("node_one = " + node_one);
-					}
-					else {
-						node_two = 10 * node_two + Character.getNumericValue(check.charAt(curseur));
-						//System.out.println("node_two = " + node_two);
-					}
+					node_two = 10 * node_two + Character.getNumericValue(check.charAt(curseur));
+					//System.out.println("node_two = " + node_two);
 				}
-				
-				curseur++;
 			}
 			
-			// Ending
-			// add node 2
-			if (!nodes_sol.contains(graph.getNode(node_two))) {
-				nodes_sol.add(graph.getNode(node_two));
-				//System.out.println("Adding node_two = " + node_two);
-			}
-			
-			// add arc
-			arcs_sol.add(new Arc(node_one, node_two));
-			//System.out.println("Adding arc from node_one = " + node_one + " to node_two = " + node_two);
-			
+			curseur++;
 		}
+		
+		// Ending
+		// add node 2
+		if (!nodes_sol.contains(graph.getNode(node_two))) {
+			nodes_sol.add(graph.getNode(node_two));
+			//System.out.println("Adding node_two = " + node_two);
+		}
+		
+		// add arc
+		arcs_sol.add(new Arc(node_one, node_two));
+		//System.out.println("Adding arc from node_one = " + node_one + " to node_two = " + node_two);
+		
+	}
 	
 	
 	public void afficheSol() {

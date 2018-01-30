@@ -1,4 +1,11 @@
+INTRODUCTION :
+
 Download the .jar and the scripts you want. A few data is given in case you don't have some.
+
+Output given by the algorithms (name of file contains c or in2):
+name_instance_file n m c in2 weight_sol time
+
+=> if the solution is not solved, then weight_sol = -1 (not possible in reality)
 
 
 PRECONDITIONS : 
