@@ -55,3 +55,13 @@ p1 : folder containing folders of instance files
 p2 : folder where results will be written : a different file will be created for each folder in folder p1
 p3 : Choose the processed algorithm : c or in2
 p4 : time limit in seconds for each file run
+
+4) Run the two algorithms for all folders with time limit per folder and another time limit per file
+
+bash run_timeout_each_folder p1 p2 p3 p4
+
+p1 : folder containing instance files
+p2 : file for writing results (can be created) : it will be the same for all instances
+p3 : time limit in seconds for each file run
+p4 : time limit in seconds for each folder run
+
