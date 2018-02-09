@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if [ "$#" -ne 1 ]; then
-  echo "Probleme dans run_perso : the only argument is for time_limite_seconds"
-  exit 1
-fi
-
-bash run_all_folders Small_data_MCA Results c $1
-bash run_all_folders Small_data_MCA Results in2 $1

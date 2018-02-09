@@ -16,9 +16,6 @@ public class Test {
 	
 	public static void main(String[] args) throws Exception {
 		
-		// Start measuring time
-		long lStartTime = System.nanoTime();
-	    
 		if (args.length != 4) {
 	      throw new IllegalArgumentException("Exactly 4 parameters required !");
 	    }
@@ -27,10 +24,10 @@ public class Test {
 		String where_read = args[0];
 		String where_write = args[1];
 		String what_to_do = args[2];
-		long time_solve_seconds = Integer.valueOf(args[3]);
+		long time_solve_seconds = Long.valueOf(args[3]);
 		
 		/* Use it when too lazy to make a .jar to check if modified things are ok
-		String where_read = "Small_data_MCA/red-graphs-100-200/4.graph";
+		String where_read = "Small_data_MCA/erreur.graph";
 		String where_write = "truc";
 		String what_to_do = "c";
 		long time_solve_seconds = 3L;*/
@@ -51,9 +48,11 @@ public class Test {
         //output.append(' ');
         //output.append(what_to_do);
         
+        // Start measuring time
+     	long lStartTime = System.nanoTime();
         
         // PRE : algo can not handle graphs containing more than 30 colors
-        if ( (graph.is_created()) && (graph.getC() <= 30) ) {
+        if ( graph.is_correct_instance() ) {
         	
         	// Dealing with "threads" for time limit
     		ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -62,13 +61,24 @@ public class Test {
 
             try {
                 // add weight_sol to output if solution has been solved
-            	output.append( future.get(time_solve_seconds*1000-20, TimeUnit.MILLISECONDS) );
+            	output.append( future.get(time_solve_seconds*1000, TimeUnit.MILLISECONDS) );
             	
             } catch (TimeoutException e) {
                 future.cancel(true);;
             }
             
             executor.shutdownNow();
+        	
+        }
+        else {
+        	// If the graph has more than 30 colors
+        	if (!graph.has_no_more_30_col()) {
+        		output.append(" -1");
+        	}
+        	// Some arcs or weights are missing in the instance
+        	else {
+        		output.append(" -2");
+        	}
         	
         }
         
@@ -80,7 +90,7 @@ public class Test {
         // Add -1 to result if no solution found
         String[] word_sep = output.toString().split("\\s+");
         if (word_sep.length < 6) {
-        	output.append(" -1");
+        	output.append(" -3");
         }
         
         // Add time to result in seconds + 3 decimals

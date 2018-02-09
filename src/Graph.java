@@ -21,7 +21,10 @@ public class Graph {
 	protected int[][] outneighbors; // contains outneighbors numeros from case 0 to case nbOutneighbors-1
 	protected double[][] weight_outneighbors; // contains weights of arcs towards outneighbors from case 0 to case nbOutneighbors-1
 	protected int[] nbOutneighbors;
-	boolean graph_created = true;
+	
+	
+	boolean no_more_30_col;
+	boolean correct_instance;
 	
 	
 	// Random generation of a graph
@@ -110,6 +113,8 @@ public class Graph {
 	/****************         Generate graph from file      ************************/
 	public Graph(String nomInstance) {
 		
+		no_more_30_col = true;
+		correct_instance = false;
 		try
 		{
 			FileInputStream fIs = new FileInputStream(new File(nomInstance));
@@ -128,72 +133,103 @@ public class Graph {
 			    int first;
 			    int second;
 			    double weight;
+			    int mprim = 0; // check if instance_file is complete
 		    	
 		    	// Get n, m and c
 		    	line = br.readLine();
 		    	word_sep = line.split("\\t");
 		    	
-		    	// Basic attribution
-				n = Integer.valueOf(word_sep[2]);
-				m = Integer.valueOf(word_sep[3]);
-				
-				nodeList = new ArrayList<Node>();
-				outneighbors = new int[n][n];
-				nbOutneighbors = new int[n];
-				weight_outneighbors = new double[n][n];
-				
-				/**************** Generate vertices ********/
-				
-				// Create vertices with colors
-				// first node
-				line = br.readLine();
-		    	read_col = 0;
-		    	cpt_col = 0;
-				power_two_col = (int)Math.pow(2., cpt_col);
-				nodeList.add(new Node(power_two_col));
-				
-				// other nodes
-				line = br.readLine();
-		    	word_sep = line.split("\\t");
-		    	while (!word_sep[0].equals("0")) {
-		    		// change color if second term is different from previous line
-		    		tmp = Integer.valueOf(word_sep[1]);
-		    		if (tmp != read_col) {
-		    			read_col = tmp;
-		    			cpt_col++;
-		    			power_two_col = (int)Math.pow(2., cpt_col);
-		    		}
+		    	// Check if first lign of instance contains 5 arguments
+		    	if (word_sep.length == 5) {
 		    		
-		    		// add new node
-		    		nodeList.add(new Node(power_two_col));
-		    		
-		    		// keep reading
-		    		line = br.readLine();
-			    	word_sep = line.split("\\t");
-		    		
-		    	}
-				
-				// remember number of colors
-				c = cpt_col+1;
-				
-				/*********** Generate arcs ******/
-		    	
-		    	while (line != null) {
-		    		word_sep = line.split("\\t");
-		    		
-		    		first = Integer.valueOf(word_sep[0]);
-		    		second = Integer.valueOf(word_sep[1]);
-		    		weight = Double.valueOf(word_sep[2]);
-		    		
-		    		//System.out.println("first = " + first + ", second = " + second + " and weight = " + weight);
-		    		
-		    		outneighbors[first][nbOutneighbors[first]] = second;
-		    		weight_outneighbors[first][nbOutneighbors[first]] = weight;
-					nbOutneighbors[first]++;
+		    		// Basic attribution
+					n = Integer.valueOf(word_sep[2]);
+					m = Integer.valueOf(word_sep[3]);
 					
-					// keep reading
-		    		line = br.readLine();
+					nodeList = new ArrayList<Node>();
+					outneighbors = new int[n][n];
+					nbOutneighbors = new int[n];
+					weight_outneighbors = new double[n][n];
+					
+					/**************** Generate vertices ********/
+					
+					// Create vertices with colors
+					// first node
+					line = br.readLine();
+			    	read_col = 0;
+			    	cpt_col = 0;
+					power_two_col = (int)Math.pow(2., cpt_col);
+					nodeList.add(new Node(power_two_col));
+					
+					// other nodes
+					line = br.readLine();
+			    	word_sep = line.split("\\t");
+			    	/****************************************************************** stops here if c > 30 **********************/
+			    	while ( (!word_sep[0].equals("0")) && (word_sep.length ==2) && (line != null) && (c < 30)) {
+			    		// change color if second term is different from previous line
+			    		tmp = Integer.valueOf(word_sep[1]);
+			    		if (tmp != read_col) {
+			    			read_col = tmp;
+			    			cpt_col++;
+			    			power_two_col = (int)Math.pow(2., cpt_col);
+			    		}
+			    		
+			    		// add new node
+			    		nodeList.add(new Node(power_two_col));
+			    		
+			    		// keep reading
+			    		line = br.readLine();
+				    	word_sep = line.split("\\t");
+			    		
+			    	}
+					
+					// remember number of colors
+					c = cpt_col+1;
+					
+					if (c <= 30) {
+						
+						/*********** Generate arcs ******/
+				    	
+				    	while (line != null) {
+				    		word_sep = line.split("\\t");
+				    		
+				    		// Check that file line is complete (node1 node2 weight)
+				    		if (word_sep.length == 3) {
+				    			first = Integer.valueOf(word_sep[0]);
+					    		second = Integer.valueOf(word_sep[1]);
+					    		weight = Double.valueOf(word_sep[2]);
+					    		
+					    		//System.out.println("first = " + first + ", second = " + second + " and weight = " + weight);
+					    		
+					    		outneighbors[first][nbOutneighbors[first]] = second;
+					    		weight_outneighbors[first][nbOutneighbors[first]] = weight;
+								nbOutneighbors[first]++;
+								
+								mprim++;
+								
+								// keep reading
+					    		line = br.readLine();
+				    		}
+				    		else {
+				    			line = null;
+				    		}
+				    	}
+				    	
+				    	// If we added the good number of arcs
+				    	if (m == mprim) {
+				    		correct_instance = true;
+				    	}
+				    	
+						
+					}
+					// else graph has more than 30 colors
+					else {
+						no_more_30_col = false;
+					}
+		    		
 		    	}
+		    	
+		    	
 				
 				
 		        br.close();
@@ -203,7 +239,7 @@ public class Graph {
 		    catch (IOException exception)
 		    {
 		        System.out.println ("Erreur lors de la lecture du fichier " + nomInstance + " : " + exception.getMessage());
-		        graph_created = false;
+		        
 		    }
 		}
 		catch (FileNotFoundException exception)
@@ -227,8 +263,11 @@ public class Graph {
 	public Node getNode(int i) {
 		return nodeList.get(i);
 	}
-	public boolean is_created() {
-		return graph_created;
+	public boolean has_no_more_30_col() {
+		return no_more_30_col;
+	}
+	public boolean is_correct_instance() {
+		return correct_instance;
 	}
 	
 	

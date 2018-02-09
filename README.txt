@@ -5,7 +5,9 @@ Download the .jar and the scripts you want. A few data is given in case you don'
 Output given by the algorithms (name of file contains c or in2):
 name_instance_file n m c in2 weight_sol time
 
-=> if the solution is not solved, then weight_sol = -1 (not possible in reality)
+- If weight_sol = -1 : the graph has more than 30 colors
+- If weight_sol = -2 : the instance file is not complete (some are missing arcs like CCMSLIB00000085542.5.graph in red-graphs-100-200 or CCMSLIB00000077104.5.graph in graphs-100-200))
+- if weight_sol = -3 : the graph has at most 30 colors and the instance file is complete, but no solution has been found within a time limit (which in this case is equal to time).
 
 
 PRECONDITIONS : 
