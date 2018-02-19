@@ -2,12 +2,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 import java.lang.StringBuffer;
+import java.util.BitSet;
 
-public class MCA_instance_FPT_in2 extends MCA_instance {
+public class MCA_instance_FPT_in2 {
 	
 	// Variables
 	HashMap3D_spe_in2 hmap;
-	protected ArrayList<Integer> intwo;
+	protected Graph graph;
 	protected int[][] col_out_nei; // list of colors in the outneighborhood of each node
 	protected int[] nb_Col_out_nei; // |col(N^+(v))| for each node
 	protected ArrayList<Node> nodes_sol;
@@ -16,81 +17,23 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 	public MCA_instance_FPT_in2 (Graph example) {
 		hmap = new HashMap3D_spe_in2();
 		graph = example;
-		intwo = graph.compute_intwo();
 		col_out_nei = new int[graph.getN()][graph.getC()];
 		nb_Col_out_nei = new int[graph.getN()];
 		graph.compute_col_out_nei(col_out_nei,nb_Col_out_nei);
 	}
 	
-	public HashMap3DG<Integer, Integer, Integer, Triple> getOldHmap() {
+	public HashMap3D_spe_in2 getOldHmap() {
 		return hmap;
 	}
 	
-	public void short_display() {
-		System.out.println("Graph containing " + graph.getN() + " vertices, " + graph.getM() + " arcs and " + graph.getC() + " colors (in2 = " + intwo.size() + ").");
-		System.out.println();
-		
+	public Graph getGraph() {
+		return graph;
 	}
 	
-	// a and b of form 'X_Y_Z...' with X, Y and Z that are node numbers.
-	public boolean disjoint_strings(String a, String b) {
+	public void short_display() {
+		System.out.println("Graph containing " + graph.getN() + " vertices, " + graph.getM() + " arcs and " + graph.getC() + " colors (in2 = " + graph.getIntwo() + ").");
+		System.out.println();
 		
-		ArrayList<Integer> list = new ArrayList<Integer>();
-		int i = 0;
-		int tmp = 0;
-		
-		// adding node numbers from a
-		while (i < a.length()) {
-			//System.out.println("a.charAt(" + i + ") = " + a.charAt(i));
-			// if we have to actualize tmp
-			if (a.charAt(i) != '_') {
-				tmp = 10 * tmp + Character.getNumericValue(a.charAt(i));
-			}
-						
-			// if we have to actualize list
-			if ( (a.charAt(i) == '_') || (i == a.length() -1)) {
-				//System.out.println("We want to add tmp = " + tmp);
-				// Either it's finished
-				if (list.contains(tmp)) {
-					return false;
-				}
-				else {
-					list.add(tmp);
-					tmp = 0;
-				}
-			}
-			i++;
-			//System.out.println("tmp = " + tmp);
-		}
-		
-		// same for b except if two same numbers
-		i = 0;
-		tmp = 0;
-		while (i < b.length()) {
-			//System.out.println("b.charAt(" + i + ") = " + b.charAt(i));
-			
-			// if we have to actualize tmp
-			if (b.charAt(i) != '_') {
-				tmp = 10 * tmp + Character.getNumericValue(b.charAt(i));
-			}
-			
-			// if we have to actualize list
-			if ( (b.charAt(i) == '_') || (i == b.length() -1)) {
-				//System.out.println("We want to add tmp = " + tmp);
-				// Either it's finished
-				if (list.contains(tmp)) {
-					return false;
-				}
-				else {
-					list.add(tmp);
-					tmp = 0;
-				}
-			}
-			i++;
-			//System.out.println("tmp = " + tmp);
-		}
-		
-		return true;
 	}
 	
 	
@@ -98,7 +41,9 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 	public void initialise_compute() {
 		
 		for (int i = 0; i < graph.getN(); i++) {
-			hmap.addElement(Integer.valueOf(graph.getNode(i).getNumero()), Integer.valueOf(0), Integer.valueOf(0), new Triple("", 0, ""));
+			BitSet bitset_col = new BitSet(graph.getC());
+			BitSet bitset_out = new BitSet(graph.getC());
+			hmap.addElement(Integer.valueOf(i), Integer.valueOf(0), bitset_col, new Triple(bitset_out, 0, ""));
 		}
 		
 		//hmap.display();
@@ -111,24 +56,27 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 		
 		initialise_compute();
 		
-		int num_outneighbor, c;
+		int num_outneighbor, c, color_outneighbor;
 		Double first;
 		Triple second;
 		int current_node;
-		StringBuffer toAdd = new StringBuffer(""), pred = new StringBuffer("");
-		int var_size, var_col;
 		
-		HashMap2DG<Integer, Integer, Triple> innermap_node;
-		HashMap2DG<Integer, Integer, Triple> innermap_node2;
-		HashMap<Integer, Triple> innermap_size;
-		HashMap<Integer, Triple> innermap_size2;
-		HashMap3DG<Integer, Integer, Integer, Triple> new_hmap = new HashMap3DG<Integer, Integer, Integer, Triple>();
-		HashMap3DG<Integer, Integer, Integer, Triple> final_hmap = new HashMap3DG<Integer, Integer, Integer, Triple>();
+		StringBuffer pred = new StringBuffer("");
+		int var_size;
+		BitSet out_cur_node = new BitSet(graph.getC());
+		BitSet merged_color_set = new BitSet(graph.getC());
+		
+		HashMap2DG<Integer, BitSet, Triple> innermap_node;
+		HashMap2DG<Integer, BitSet, Triple> innermap_node2;
+		HashMap<BitSet, Triple> innermap_size;
+		HashMap<BitSet, Triple> innermap_size2;
+		HashMap3D_spe_in2 new_hmap = new HashMap3D_spe_in2();
+		HashMap3D_spe_in2 final_hmap = new HashMap3D_spe_in2();
 		
 		
 		// Going from node n-1 to node 0 ensures that all outneighbors of current_node have already been computed thanks to color hierarchy
 		// Indeed we can start at node n - number_leaves
-		for (int v = graph.getN()-1; v > -1; v--) {
+		for (current_node = graph.getN()-1; current_node > -1; current_node--) {
 			
 			/************* For respecting time limit *************/
 			if (Thread.interrupted()) {
@@ -137,17 +85,13 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
     		}
 			/************* For respecting time limit *************/
 			
-			current_node  = graph.getNode(v).getNumero();
-			//System.out.println("-------------------------------------------------------");
-			//System.out.println("current_node = " + graph.getNode(current_node).getNumero());
-			
 			
 			if (graph.getNbOutneighbors(current_node) > 0) {
-				
 				
 				// Neighbors are sorted by color
 				int u = 0; // cpt outneighbors
 				num_outneighbor = graph.getOutneighbors(current_node,u);
+				color_outneighbor = graph.getNode(num_outneighbor).getColor();
 				
 				
 				// For each color in the outneighborhood of current_node
@@ -165,9 +109,10 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 					//System.out.println("--- FIRST PART");
 					
 					
+					// First part
 					
 					// For each outneighbor of color c
-					while ( (u < graph.getNbOutneighbors(current_node)) && (graph.getNode(num_outneighbor).getColor() == c) ) {
+					while ( (u < graph.getNbOutneighbors(current_node)) && (color_outneighbor == c) ) {
 						
 						/************* For respecting time limit *************/
 						if (Thread.interrupted()) {
@@ -179,7 +124,7 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 						//System.out.println("------" + current_node + " has outneighbor " + num_outneighbor + " of color " + c);
 						
 						// For each size between 0 and |X|
-						for (int current_size = 0; current_size <= intwo.size(); current_size++) {
+						for (int current_size = 0; current_size <= graph.getIntwo(); current_size++) {
 							
 							/************* For respecting time limit *************/
 							if (Thread.interrupted()) {
@@ -203,7 +148,7 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 									//System.out.println(innermap_size);
 									
 									// For all color sets of size current_size of node u
-									for (Map.Entry<Integer, Triple> entry : innermap_size.entrySet()) {
+									for (Map.Entry<BitSet, Triple> entry : innermap_size.entrySet()) {
 										
 										/************* For respecting time limit *************/
 										if (Thread.interrupted()) {
@@ -212,47 +157,55 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 							    		}
 										/************* For respecting time limit *************/
 										
-										Integer color_set = entry.getKey();
+										BitSet color_set = entry.getKey();
 						            	Triple value = entry.getValue();
 						            	
 						            	// use key and value
 						                //System.out.println("------------ For color set " + color_set + " of weight " + value.getWeight() + " :");
 						                first = value.getWeight() + graph.getWeight_outneighbors(current_node,u);
 						                
-						                // if c does not belong to X
-										if (!intwo.contains(c)) {
+						                
+						                // Update merged_color_set
+						            	merged_color_set.clear();
+						            	merged_color_set.or(color_set);
+						            	
+						            	if (!graph.getListIntwo().contains(color_outneighbor)) {
 											var_size = current_size;
-											var_col = color_set;
 										}
 										else {
 											var_size = current_size + 1;
-											var_col = color_set + graph.getNode(num_outneighbor).getColor();
+											merged_color_set.set(color_outneighbor, true);
 										}
-						                
-										second = new_hmap.getElement(Integer.valueOf(graph.getNode(current_node).getNumero()), Integer.valueOf(var_size), 
-					                			Integer.valueOf(var_col));
+						            	
+						            	
+										second = new_hmap.getElement(Integer.valueOf(current_node), Integer.valueOf(var_size), 
+					                			merged_color_set);
 										
 										//System.out.println("------------ first = " + first + " and second = " + second);
 						                
 						                if ( ( (second == null) || (first > second.getWeight()) ) && ( first > 0 ) ) {
-						                	toAdd.setLength(0);
-						                	toAdd.append(String.valueOf(graph.getNode(num_outneighbor).getColor()));
 						                	
+						                	// Update color set of outneighbors of current_node
+						                	out_cur_node.clear();
+						                	out_cur_node.set(color_outneighbor, true);
+						                	
+						                	// Update predecessors
 						                	pred.setLength(0);
 						                	pred.append(String.valueOf(current_node) + '-' + String.valueOf(num_outneighbor));
-						                	if (value.getPred() != "") {
+						                	if ( !(value.getPred().equals("")) ) {
 						                		pred.append('_' + value.getPred());
 						                	}
 						                	
-						                	
-						                	new_hmap.addElement(Integer.valueOf(graph.getNode(current_node).getNumero()), Integer.valueOf(var_size), 
-						                			Integer.valueOf(var_col), new Triple(toAdd.toString(),first, pred.toString()));
+						                	// Add new element in new_hmap (and not in hmap)
+						                	new_hmap.addElement(Integer.valueOf(current_node), Integer.valueOf(var_size), 
+						                			merged_color_set.get(0, merged_color_set.size()), 
+						                			new Triple(out_cur_node.get(0, out_cur_node.size()),first, pred.toString()));
 							                
 							                /*System.out.print("New entry A (new_hmap): ");
 							                System.out.print("node = " + current_node);
 							                System.out.print(", size = " + var_size);
-							                System.out.print(", color_set = " + var_col);
-							                System.out.print(", Triple.out : " + toAdd);
+							                System.out.print(", color_set = " + merged_color_set.toString());
+							                System.out.print(", Triple.out : " + out_cur_node);
 							                System.out.print(", Triple.weight : " + first);
 							                System.out.println(", Triple.pred = " + pred);
 							                System.out.println();*/
@@ -280,6 +233,7 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 						// Next outneighbor
 						u++;
 						num_outneighbor = graph.getOutneighbors(current_node,u);
+						color_outneighbor = graph.getNode(num_outneighbor).getColor();
 						
 					}
 					
@@ -293,14 +247,14 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 					//System.out.println("--- SECOND PART");
 					
 					// Get part of the table for node current_node
-					innermap_node = new_hmap.getPartSize(Integer.valueOf(graph.getNode(current_node).getNumero()));
-					innermap_node2 = hmap.getPartSize(Integer.valueOf(graph.getNode(current_node).getNumero()));
+					innermap_node = new_hmap.getPartSize(Integer.valueOf(current_node));
+					innermap_node2 = hmap.getPartSize(Integer.valueOf(current_node));
 					
 					// if both subparts of hmaps are not empty
 					if ((innermap_node != null) && (innermap_node2 != null)) {
 						
 						// For each size between 0 and |X|
-						for (int size_one = 0; size_one <= intwo.size(); size_one++) {
+						for (int size_one = 0; size_one <= graph.getIntwo(); size_one++) {
 							
 							/************* For respecting time limit *************/
 							if (Thread.interrupted()) {
@@ -317,7 +271,7 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 							if (innermap_size != null) {
 								
 								// For all color sets s_one of size size_one of node current_node
-								for (Map.Entry<Integer, Triple> entry_one : innermap_size.entrySet()) {
+								for (Map.Entry<BitSet, Triple> entry_one : innermap_size.entrySet()) {
 									
 									/************* For respecting time limit *************/
 									if (Thread.interrupted()) {
@@ -327,12 +281,12 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 									/************* For respecting time limit *************/
 									
 									
-					            	Integer s_one = entry_one.getKey();
+									BitSet s_one = entry_one.getKey();
 					            	Triple value_s_one = entry_one.getValue();
 					            	
 					            	//System.out.println("--------- s_one = " + s_one + " de Triple " + value_s_one);
 					            	
-					            	for (int size_two = 0; size_two <= intwo.size() - size_one; size_two++) {
+					            	for (int size_two = 0; size_two <= graph.getIntwo() - size_one; size_two++) {
 					            		
 					            		
 					            		/************* For respecting time limit *************/
@@ -352,7 +306,7 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 						            	if (innermap_size2 != null) {
 											
 											// For all color sets s_two of size (size_two) of node current_node
-											for (Map.Entry<Integer, Triple> entry_two : innermap_size2.entrySet()) {
+											for (Map.Entry<BitSet, Triple> entry_two : innermap_size2.entrySet()) {
 												
 												/************* For respecting time limit *************/
 												if (Thread.interrupted()) {
@@ -361,33 +315,44 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 									    		}
 												/************* For respecting time limit *************/
 												
-								            	Integer s_two = entry_two.getKey();
+												BitSet s_two = entry_two.getKey();
 								            	Triple value_s_two = entry_two.getValue();
 								            	
 								            	//System.out.println("--------------- s_two = " + s_two + " de poids " + value_s_two);
 								            	
-								            	if ( (are_disjoint(s_one, s_two) && ( disjoint_strings(value_s_one.getOut(), value_s_two.getOut()) ) ) ) {
+								            	
+								            	
+								            	if ( ( !(s_one.intersects(s_two)) ) && ( !(value_s_one.getOut().intersects(value_s_two.getOut())) ) ) {
+								            		
+								            		// Update merged_color_set
+								            		merged_color_set.clear();
+									                merged_color_set.or(s_one);
+									                merged_color_set.or(s_two);
 								            		
 								            		first = value_s_one.getWeight() + value_s_two.getWeight();
 								            		
-								            		second = final_hmap.getElement(Integer.valueOf(graph.getNode(current_node).getNumero()),
-								            				Integer.valueOf(size_one+size_two), (s_one+s_two));
+								            		second = final_hmap.getElement(Integer.valueOf(current_node),
+								            				Integer.valueOf(size_one+size_two), merged_color_set);
 								            		
 								            		if (second == null) {
-								            			second = new_hmap.getElement(Integer.valueOf(graph.getNode(current_node).getNumero()),
-									            				Integer.valueOf(size_one+size_two), (s_one+s_two));
+								            			second = new_hmap.getElement(Integer.valueOf(current_node),
+									            				Integer.valueOf(size_one+size_two), merged_color_set);
 								            		}
 								            		
 									                //System.out.println("--------------- first = " + first + " and second = " + second);
 									                
 									                if ( ( (second == null) || (first > second.getWeight()) ) && (first > 0) ) {
-									                	toAdd.setLength(0);
-									                	toAdd.append(value_s_one.getOut() + '_' + value_s_two.getOut());
 									                	
+									                	// Update color set of outneighbors of current_node
+									                	out_cur_node.clear();
+									                	out_cur_node.or(value_s_one.getOut());
+									                	out_cur_node.or(value_s_two.getOut());
+									                	
+									                	// Update predecessors
 									                	pred.setLength(0);
-									                	if (value_s_one.getPred() != "") {
+									                	if ( !(value_s_one.getPred().equals("")) ) {
 									                		pred.append(value_s_one.getPred());
-									                		if (value_s_two.getPred() != "") {
+									                		if ( !(value_s_two.getPred().equals("")) ) {
 									                			pred.append("_" + value_s_two.getPred());
 									                		}		
 									                	}
@@ -395,14 +360,16 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 									                		pred.append(value_s_two.getPred());
 									                	}
 									                	
-									                	final_hmap.addElement(Integer.valueOf(graph.getNode(current_node).getNumero()),
-									            				Integer.valueOf(size_one+size_two), (s_one+s_two), new Triple(toAdd.toString(), first, pred.toString()));
+									                	// Add in final_hmap
+									                	final_hmap.addElement(Integer.valueOf(current_node),
+									            				Integer.valueOf(size_one+size_two), merged_color_set.get(0, merged_color_set.size()), 
+									            				new Triple(out_cur_node.get(0, out_cur_node.size()), first, pred.toString()));
 										                
 										                /*System.out.print("New entry B (final_hmap): ");
-										                System.out.print("node = " + Integer.valueOf(graph.getNode(current_node).getNumero()));
+										                System.out.print("node = " + Integer.valueOf(current_node));
 										                System.out.print(", size = " + Integer.valueOf(size_one+size_two));
-										                System.out.print(", color_set = " + (s_one+s_two));
-										                System.out.print(", Triple.out : " + toAdd);
+										                System.out.print(", color set = " + merged_color_set.toString());
+										                System.out.print(", Triple.out : " + out_cur_node);
 										                System.out.print(", Triple.weight : " + first);
 										                System.out.println(", Triple.pred = " + pred);
 										                System.out.println();*/
@@ -456,18 +423,18 @@ public class MCA_instance_FPT_in2 extends MCA_instance {
 	public Triple searchBest(Integer i) {
 			
 		double res = -1;
-		Triple best = hmap.getOuterMap().get(i).getElement(0, 0);
+		Triple best = new Triple();
 		
-		HashMap2DG<Integer, Integer, Triple> hmap2d = hmap.getOuterMap().get(i);
+		HashMap2DG<Integer, BitSet, Triple> hmap2d = hmap.getOuterMap().get(i);
 	       
 	       
-		for (Map.Entry<Integer,HashMap<Integer, Triple>> entry : hmap2d.getOuterMap().entrySet()) {
+		for (Map.Entry<Integer,HashMap<BitSet, Triple>> entry : hmap2d.getOuterMap().entrySet()) {
 			
-	           HashMap<Integer, Triple> value = entry.getValue();
+	           HashMap<BitSet, Triple> value = entry.getValue();
 	           
 	           //System.out.println("For size " + key + " : ");
 	           
-	           for (Map.Entry<Integer, Triple> entrybis : value.entrySet()) {
+	           for (Map.Entry<BitSet, Triple> entrybis : value.entrySet()) {
 	           	
 	           	Triple valuebis = entrybis.getValue();
 	           	

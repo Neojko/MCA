@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ "$#" -ne 3 ]; then
+  echo "Probleme dans run_folder_para"
+  exit 1
+fi
+
+#echo "Working on directory $1"
+
+for file in "$1"/*
+do
+  case "$file" in
+  *.graph ) 
+        #echo "$(basename $file)"
+        bash run_mca $file $2 "both-c" $3
+        bash run_mca $file $2 "both-in2" $3
+        ;;
+  esac
+done
+
+

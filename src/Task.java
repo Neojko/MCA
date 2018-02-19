@@ -19,7 +19,7 @@ class Task implements Callable<String> {
 		
 		StringBuffer result = new StringBuffer("");
         
-		if (what_to_do.equals("c")) {
+		if ( (what_to_do.equals("c")) || (what_to_do.equals("both-c")) ) {
 			
 			MCA_instance_FPT_C instance = new MCA_instance_FPT_C(graph);
 			
@@ -31,13 +31,12 @@ class Task implements Callable<String> {
 				//instance.retrieveSol();
 				//instance.afficheSol();
 				
-				result.append(' ');
 				result.append(res);
     		}
 			
 		}
 		// if ( what_to_do == "in2" )
-		else  {
+		else if ( (what_to_do.equals("in2")) || (what_to_do.equals("both-in2")) ) {
 			
 			MCA_instance_FPT_in2 instance = new MCA_instance_FPT_in2(graph);
 			
@@ -49,7 +48,6 @@ class Task implements Callable<String> {
 				//instance.retrieveSol();
 				//instance.afficheSol();
 				
-				result.append(' ');
 				result.append(res);
     		}
 			

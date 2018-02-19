@@ -4,10 +4,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.Math; 
 import java.lang.Integer;
 import java.util.ArrayList;
 import java.util.List;
+import java.lang.IndexOutOfBoundsException;
 
 public class Graph {
 
@@ -15,6 +15,9 @@ public class Graph {
 	protected int n; // number of nodes
 	protected int m; // number of arcs
 	protected int c; // number of colors
+	protected int intwo; // number of colors of indegree at least 2 in \h
+	protected ArrayList<Integer> list_intwo;
+	protected int s; // number of arcs we need to remove in \h in order to make it a tree.
 	protected List<Node> nodeList;
 	
 	// Stocking int takes 4 times less space than stocking Integer. Random number of second part of the table makes it more sure to have a fixed table. 
@@ -22,99 +25,15 @@ public class Graph {
 	protected double[][] weight_outneighbors; // contains weights of arcs towards outneighbors from case 0 to case nbOutneighbors-1
 	protected int[] nbOutneighbors;
 	
-	
-	boolean no_more_30_col;
+	// Check if instance is correct
 	boolean correct_instance;
-	
-	
-	// Random generation of a graph
-	public Graph(int number_of_nodes, int number_of_colors) {
-		
-		// Basic attribution
-		n = number_of_nodes;
-		m = 0;
-		c = number_of_colors;
-		nodeList = new ArrayList<Node>();
-		outneighbors = new int[n][n];
-		nbOutneighbors = new int[n];
-		weight_outneighbors = new double[n][n];
-		
-		
-		// Determine number of occurrences of each color
-		int random = 0;
-		int[] occ_color = new int[c];
-		// Only the root has color 0
-		occ_color[0] = 1;
-		for (int i=1;i<n;i++) {
-			// Generate random color between 0 and c-1 (excluded)
-			random = (int)(Math.random() * (c-1));
-			// Adding in case random+1 because only root has color 0
-			occ_color[random+1]++;
-		}
-		
-		/*System.out.print("Color repartition : ");
-		for (int i=0;i<c;i++) {
-			System.out.print(occ_color[i] + " ");
-		}
-		System.out.println();*/
-		
-		int node_color;
-		//String binary_color;
-		int current_color = 0;
-		int counter_current_color = 0;
-		int cumulative_sum_colors  = occ_color[0];
-		int out;
-		double weight_out;
-		for (int current_vertex = 0; current_vertex < n; current_vertex++) {
-			
-			//System.out.println("current_vertex = " + current_vertex);
-			//System.out.println("current_color = " + current_color);
-			
-			// Create node
-			node_color = (int)Math.pow(2., current_color);
-			//binary_color = Integer.toBinaryString(node_color);
-			Node node = new Node(node_color);
-			nodeList.add(node);	
-			
-			// Create outneighbors (only if color of outneighbors come after current_color)
-			for (out = cumulative_sum_colors; out < n; out++) {
-				// Does current_vertex has out as outneighbor ?
-				random = (int)(Math.random() * 2); //0 or 1
-				
-				if (random == 1) {
-					outneighbors[current_vertex][nbOutneighbors[current_vertex]] = out;
-					//Calculate weight (between -5 and 5)
-					weight_out = (Math.random() * 11) - 5;
-					weight_outneighbors[current_vertex][nbOutneighbors[current_vertex]] = weight_out;
-					nbOutneighbors[current_vertex]++;
-					m++;
-				}
-			}
-			
-			// update color
-			if (counter_current_color < occ_color[current_color]-1) {
-				counter_current_color++;
-			}
-			else {
-				current_color++;
-				while ( (current_color < c) && (occ_color[current_color] == 0) ) {
-					current_color++;
-				}
-				counter_current_color = 0;
-				if (current_color < c) {
-					cumulative_sum_colors += occ_color[current_color];
-				}
-			}
-		}
-	}
-	
+	String molecule_name;
 	
 	
 	/****************         Generate graph from file      ************************/
 	public Graph(String nomInstance) {
 		
-		no_more_30_col = true;
-		correct_instance = false;
+		correct_instance = true;
 		try
 		{
 			FileInputStream fIs = new FileInputStream(new File(nomInstance));
@@ -127,124 +46,134 @@ public class Graph {
 		    	String line;
 			    String[] word_sep;
 			    int read_col;
-			    int cpt_col;
-			    int power_two_col;
 			    int tmp;
 			    int first;
 			    int second;
 			    double weight;
-			    int mprim = 0; // check if instance_file is complete
-		    	
+		    	int count_n = 0;
+			    
 		    	// Get n, m and c
 		    	line = br.readLine();
 		    	word_sep = line.split("\\t");
 		    	
-		    	// Check if first lign of instance contains 5 arguments
-		    	if (word_sep.length == 5) {
+		    	// Basic attribution
+		    	molecule_name = word_sep[1];
+		    	n = Integer.valueOf(word_sep[2]);
+				m = Integer.valueOf(word_sep[3]);
+				c = 0;
+				
+				nodeList = new ArrayList<Node>();
+				
+				
+				/**************** Generate vertices ********/
+				
+				// Create vertices with colors
+				// first node
+				line = br.readLine();
+		    	read_col = 0;
+				nodeList.add(new Node(0));
+				count_n++;
+				
+				// other nodes
+				line = br.readLine();
+		    	word_sep = line.split("\\t");
+		    	
+		    	while (count_n < n) {
 		    		
-		    		// Basic attribution
-					n = Integer.valueOf(word_sep[2]);
-					m = Integer.valueOf(word_sep[3]);
-					
-					nodeList = new ArrayList<Node>();
-					outneighbors = new int[n][n];
-					nbOutneighbors = new int[n];
-					weight_outneighbors = new double[n][n];
-					
-					/**************** Generate vertices ********/
-					
-					// Create vertices with colors
-					// first node
-					line = br.readLine();
-			    	read_col = 0;
-			    	cpt_col = 0;
-					power_two_col = (int)Math.pow(2., cpt_col);
-					nodeList.add(new Node(power_two_col));
-					
-					// other nodes
-					line = br.readLine();
+		    		// change color if second term is different from previous line
+		    		tmp = Integer.valueOf(word_sep[1]);
+		    		if (tmp != read_col) {
+		    			read_col = tmp;
+		    			c++;
+		    		}
+		    		
+		    		// add new node
+		    		nodeList.add(new Node(c));
+		    		count_n++;
+		    		
+		    		// keep reading
+		    		line = br.readLine();
 			    	word_sep = line.split("\\t");
-			    	/****************************************************************** stops here if c > 30 **********************/
-			    	while ( (!word_sep[0].equals("0")) && (word_sep.length ==2) && (line != null) && (c < 30)) {
-			    		// change color if second term is different from previous line
-			    		tmp = Integer.valueOf(word_sep[1]);
-			    		if (tmp != read_col) {
-			    			read_col = tmp;
-			    			cpt_col++;
-			    			power_two_col = (int)Math.pow(2., cpt_col);
-			    		}
-			    		
-			    		// add new node
-			    		nodeList.add(new Node(power_two_col));
-			    		
-			    		// keep reading
-			    		line = br.readLine();
-				    	word_sep = line.split("\\t");
-			    		
-			    	}
-					
-					// remember number of colors
-					c = cpt_col+1;
-					
-					if (c <= 30) {
-						
-						/*********** Generate arcs ******/
-				    	
-				    	while (line != null) {
-				    		word_sep = line.split("\\t");
-				    		
-				    		// Check that file line is complete (node1 node2 weight)
-				    		if (word_sep.length == 3) {
-				    			first = Integer.valueOf(word_sep[0]);
-					    		second = Integer.valueOf(word_sep[1]);
-					    		weight = Double.valueOf(word_sep[2]);
-					    		
-					    		//System.out.println("first = " + first + ", second = " + second + " and weight = " + weight);
-					    		
-					    		outneighbors[first][nbOutneighbors[first]] = second;
-					    		weight_outneighbors[first][nbOutneighbors[first]] = weight;
-								nbOutneighbors[first]++;
-								
-								mprim++;
-								
-								// keep reading
-					    		line = br.readLine();
-				    		}
-				    		else {
-				    			line = null;
-				    		}
-				    	}
-				    	
-				    	// If we added the good number of arcs
-				    	if (m == mprim) {
-				    		correct_instance = true;
-				    	}
-				    	
-						
-					}
-					// else graph has more than 30 colors
-					else {
-						no_more_30_col = false;
-					}
 		    		
+		    	}
+				
+				// remember number of colors
+				c++;
+				
+				/*********** Generate arcs ******/
+				intwo = 0;
+				s = 0;
+				list_intwo = new ArrayList<Integer>();
+				outneighbors = new int[n][n];
+				weight_outneighbors = new double[n][n];
+				nbOutneighbors = new int[n];
+				boolean[][] in = new boolean[c][c]; // color i has inneighbor j in \h if in[i][j] = 1
+		    	
+				int count_m = 0;
+		    	while (count_m < m) {
+		    		word_sep = line.split("\\t");
+		    		
+		    		first = Integer.valueOf(word_sep[0]);
+		    		second = Integer.valueOf(word_sep[1]);
+		    		weight = Double.valueOf(word_sep[2]);
+		    		
+		    		//System.out.println("first = " + first + ", second = " + second + " and weight = " + weight);
+		    		
+		    		// Build the arc
+		    		outneighbors[first][nbOutneighbors[first]] = second;
+		    		weight_outneighbors[first][nbOutneighbors[first]] = weight;
+					nbOutneighbors[first]++;
+					
+					// For intwo and s
+					in[nodeList.get(second).getColor()][nodeList.get(first).getColor()] = true;
+					
+					count_m++;
+					
+					// keep reading
+		    		line = br.readLine();
 		    	}
 		    	
 		    	
-				
-				
+		    	// computing intwo and s
+		    	int cpt;
+		    	for (int i = 0; i < c; i++) {
+		    		cpt = 0;
+		    		for (int j = 0; j < c; j++) {
+		    			if (in[i][j]) {
+		    				cpt++;
+		    			}
+		    		}
+		    		if (cpt > 1) {
+		    			intwo++;
+		    			list_intwo.add(i);
+		    			s+=cpt-1;
+		    		}
+		    	}
+		    	
+		    	
+		    	
 		        br.close();
 		    
 		    
 		    }
+		    catch (NullPointerException exception) {
+		    	correct_instance = false;
+		    	//System.out.println("1");
+		    }
+		    catch (IndexOutOfBoundsException exception) {
+		    	correct_instance = false;
+		    	//System.out.println("2");
+		    }
 		    catch (IOException exception)
 		    {
-		        System.out.println ("Erreur lors de la lecture du fichier " + nomInstance + " : " + exception.getMessage());
-		        
+		    	correct_instance = false;
+		    	//System.out.println("3");
 		    }
 		}
 		catch (FileNotFoundException exception)
 		{
-		    System.out.println ("Le fichier " + nomInstance + " n'a pas été trouvé");
+			correct_instance = false;
+			//System.out.println("4");
 		}
 		
 	}
@@ -260,122 +189,38 @@ public class Graph {
 	public int getM() {
 		return m;
 	}
+	public int getIntwo() {
+		return intwo;
+	}
+	public ArrayList<Integer> getListIntwo() {
+		return list_intwo;
+	}
+	public int getS() {
+		return s;
+	}
+	public String getMolecule() {
+		return molecule_name;
+	}
 	public Node getNode(int i) {
 		return nodeList.get(i);
 	}
-	public boolean has_no_more_30_col() {
-		return no_more_30_col;
-	}
-	public boolean is_correct_instance() {
-		return correct_instance;
-	}
-	
 	
 	public int getOutneighbors(int node, int index) {
 		return outneighbors[node][index];
 	}
-
-
+	
 	public double getWeight_outneighbors(int node, int index) {
 		return weight_outneighbors[node][index];
 	}
-
-
+	
 	public int getNbOutneighbors(int node) {
 		return nbOutneighbors[node];
 	}
 	
-	public ArrayList<Integer> compute_intwo() {
-		
-		int[] res = new int[c];
-		ArrayList<Integer> intwo = new ArrayList<Integer>();
-		int color_index, color_pow;
-		
-		// Initialization
-		for (int i = 0; i < c; i++) {
-			res[i] = -1;
-		}
-		
-		for (int i = 0; i < n; i++) {
-			//System.out.println("i = " + i + ", couleur de i = " + nodeList.get(i).getColor() + " and jmax = " + nbOutneighbors[nodeList.get(i).getNumero()]);
-			
-			for (int j = 0; j < nbOutneighbors[nodeList.get(i).getNumero()]; j++) {
-				
-				// Vertex true color
-				color_pow = nodeList.get(outneighbors[i][j]).getColor();
-				// Index in table of vertex true color
-				color_index = (int)(Math.log(color_pow) / Math.log(2.0));
-				
-				//System.out.println("--- j = " + j + ", color_index = " + color_index + " and color_pow = " + color_pow);
-				
-				// if no color yet
-				if (res[color_index] == -1) {
-					res[color_index] = nodeList.get(i).getColor();
-					//System.out.println("------ Pas d'innei deja entre pour la couleur " + color_pow + ", on ajoute la couleur de i.");
-					
-				}
-				// if not same color and not already X color
-				else if ( (res[color_index] != -2) && (res[color_index] != nodeList.get(i).getColor()) ) {
-					
-					//System.out.println("------ La couleur " + color_pow + " avait deja la couleur " + res[color_index] + " d'entree, on la rajoute a intwo.");
-					
-					intwo.add(color_pow);
-					res[color_index] = -2;
-				}
-				
-			}
-			
-		}
-		
-		return intwo;
-		
+	public boolean is_instance_correct() {
+		return correct_instance;
 	}
 	
-	public int give_intwo() {
-		
-		int[] res = new int[c];
-		int intwo = 0;
-		int color_index, color_pow;
-		
-		// Initialization
-		for (int i = 0; i < c; i++) {
-			res[i] = -1;
-		}
-		
-		for (int i = 0; i < n; i++) {
-			//System.out.println("i = " + i + ", couleur de i = " + nodeList.get(i).getColor() + " and jmax = " + nbOutneighbors[nodeList.get(i).getNumero()]);
-			
-			for (int j = 0; j < nbOutneighbors[nodeList.get(i).getNumero()]; j++) {
-				
-				// Vertex true color
-				color_pow = nodeList.get(outneighbors[i][j]).getColor();
-				// Index in table of vertex true color
-				color_index = (int)(Math.log(color_pow) / Math.log(2.0));
-				
-				//System.out.println("--- j = " + j + ", color_index = " + color_index + " and color_pow = " + color_pow);
-				
-				// if no color yet
-				if (res[color_index] == -1) {
-					res[color_index] = nodeList.get(i).getColor();
-					//System.out.println("------ Pas d'innei deja entre pour la couleur " + color_pow + ", on ajoute la couleur de i.");
-					
-				}
-				// if not same color and not already X color
-				else if ( (res[color_index] != -2) && (res[color_index] != nodeList.get(i).getColor()) ) {
-					
-					//System.out.println("------ La couleur " + color_pow + " avait deja la couleur " + res[color_index] + " d'entree, on la rajoute a intwo.");
-					
-					intwo++;
-					res[color_index] = -2;
-				}
-				
-			}
-			
-		}
-		
-		return intwo;
-		
-	}
 	
 	public void compute_col_out_nei(int[][] col, int[] nb) {
 		

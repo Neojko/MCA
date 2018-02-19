@@ -1,44 +1,41 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.BitSet;
 
 
-public class MCA_instance_FPT_C extends MCA_instance {
+public class MCA_instance_FPT_C {
 	
 	// Variables
-	protected HashMap3DG<Integer, Integer, Integer, Paire> hmap;
+	protected HashMap3DG<Integer, Integer, BitSet, Paire> hmap;
 	protected ArrayList<Node> nodes_sol;
 	protected ArrayList<Arc> arcs_sol;
+	protected Graph graph;
 	
-	public MCA_instance_FPT_C (int number_of_nodes, int number_of_colors) {
-		hmap = new HashMap3DG<Integer, Integer, Integer, Paire>();
-		graph = new Graph(number_of_nodes, number_of_colors);
-	}
-	
-	// To compare results on same graph
+	// Constructor
 	public MCA_instance_FPT_C (Graph example) {
-		hmap = new HashMap3DG<Integer, Integer, Integer, Paire>();
+		hmap = new HashMap3DG<Integer, Integer, BitSet, Paire>();
 		graph = example;
 	}
 	
-	public HashMap3DG<Integer, Integer, Integer, Paire> getHmap() {
+	public HashMap3DG<Integer, Integer, BitSet, Paire> getHmap() {
 		return hmap;
 	}
-		
 	
-	// FPT algorithm
+	public Graph getGraph() {
+		return graph;
+	}	
 	
 	public void initialise_compute() {
 		
 		for (int i = 0; i < graph.getN(); i++) {
-			hmap.addElement(Integer.valueOf(graph.getNode(i).getNumero()), Integer.valueOf(1), Integer.valueOf(graph.getNode(i).getColor()), new Paire(0, ""));
+			BitSet bitset = new BitSet(graph.getC());
+			bitset.set(graph.getNode(i).getColor(), true);
+			hmap.addElement(Integer.valueOf(i), Integer.valueOf(1), bitset, new Paire(0, ""));
 		}
 		
 		//hmap.display();
 	}
-	
-	
-	
 	
 	public void compute() {
 		
@@ -48,10 +45,11 @@ public class MCA_instance_FPT_C extends MCA_instance {
 		Double first;
 		Paire second;
 		StringBuffer pred = new StringBuffer("");
+		BitSet merged_color_set = new BitSet(graph.getC());
 		
-		HashMap2DG<Integer, Integer, Paire> innermap_node;
-		HashMap<Integer, Paire> innermap_size;
-		HashMap<Integer, Paire> innermap_size2;
+		HashMap2DG<Integer, BitSet, Paire> innermap_node;
+		HashMap<BitSet, Paire> innermap_size;
+		HashMap<BitSet, Paire> innermap_size2;
 		
 		
 		// Going from node n-1 to node 0 ensures that all outneighbors of current_node have already been computed thanks to color hierarchy
@@ -68,6 +66,9 @@ public class MCA_instance_FPT_C extends MCA_instance {
 			/************* For respecting time limit *************/
 			
 			if (graph.getNbOutneighbors(current_node) > 0) {
+				
+				int color_current_node = graph.getNode(current_node).getColor();
+				
 				// For each size between 2 and c
 				for (int current_size = 2; current_size < graph.getC()+1; current_size++) {
 					
@@ -91,8 +92,8 @@ public class MCA_instance_FPT_C extends MCA_instance {
 			    		}
 						/************* For respecting time limit *************/
 						
-						//System.out.println(current_node + " has outneighbor " + outneighbors[current_node][u]);
 						num_outneighbor = graph.getOutneighbors(current_node,u);
+						//System.out.println(current_node + " has outneighbor " + num_outneighbor);
 						
 						// Get part of the table for node u
 						innermap_node = hmap.getPartSize(Integer.valueOf(num_outneighbor));
@@ -107,7 +108,7 @@ public class MCA_instance_FPT_C extends MCA_instance {
 								//System.out.println(innermap_size);
 								
 								// For all color sets of size current_size-1 of node u
-								for (Map.Entry<Integer, Paire> entry : innermap_size.entrySet()) {
+								for (Map.Entry<BitSet, Paire> entry : innermap_size.entrySet()) {
 									
 									/************* For respecting time limit *************/
 									if (Thread.interrupted()) {
@@ -116,31 +117,37 @@ public class MCA_instance_FPT_C extends MCA_instance {
 						    		}
 									/************* For respecting time limit *************/
 									
-					            	Integer color_set = entry.getKey();
+									BitSet color_set = entry.getKey();
 					            	Paire value = entry.getValue();
 					            	
 					            	// use key and value
 					                //System.out.println("For color set " + color_set + " of weight " + value + " :");
+					                
+					            	// Update merged_color_set
+					            	merged_color_set.clear();
+					            	merged_color_set.or(color_set);
+					            	merged_color_set.set(color_current_node, true);
+					                
 					                first = value.getWeight() + graph.getWeight_outneighbors(current_node,u);
-					                second = hmap.getElement(Integer.valueOf(graph.getNode(current_node).getNumero()), Integer.valueOf(current_size), 
-				                			Integer.valueOf(color_set+graph.getNode(current_node).getColor()));
+					                second = hmap.getElement(Integer.valueOf(current_node), Integer.valueOf(current_size),
+					                		merged_color_set );
 					                //System.out.println("first = " + first + " and second = " + second);
 					                
 					                if ( ( (second == null) || (first > second.getWeight()) ) && ( first > 0 ) ) {
 					                	
 					                	pred.setLength(0);
 					                	pred.append(String.valueOf(current_node) + '-' + String.valueOf(num_outneighbor));
-					                	if (value.getPred() != "") {
+					                	if (!(value.getPred().equals(""))) {
 					                		pred.append('_' + value.getPred());
 					                	}
 					                	
-					                	hmap.addElement(Integer.valueOf(graph.getNode(current_node).getNumero()), Integer.valueOf(current_size), 
-					                			Integer.valueOf(color_set+graph.getNode(current_node).getColor()), new Paire(first, pred.toString()));
+					                	hmap.addElement(Integer.valueOf(current_node), Integer.valueOf(current_size), 
+					                			merged_color_set.get(0, merged_color_set.size()), new Paire(first, pred.toString()));
 						                
 						                /*System.out.print("New entry A : ");
-						                System.out.print("node = " + Integer.valueOf(graph.getNode(current_node).getNumero()));
+						                System.out.print("node = " + Integer.valueOf(current_node));
 						                System.out.print(", size = " + Integer.valueOf(current_size));
-						                System.out.print(", color_set = " + Integer.valueOf(color_set+graph.getNode(current_node).getColor()));
+						                System.out.print(", merged_color_set = " + merged_color_set);
 						                System.out.print(", paire.weight : " + first);
 						                System.out.println(", paire.pred : " + pred);
 						                System.out.println();*/
@@ -179,7 +186,7 @@ public class MCA_instance_FPT_C extends MCA_instance {
 						//System.out.println("sub_cur_size = " + sub_cur_size);
 						
 						// Get part of the table for node current_node
-						innermap_node = hmap.getPartSize(Integer.valueOf(graph.getNode(current_node).getNumero()));
+						innermap_node = hmap.getPartSize(Integer.valueOf(current_node));
 						if (innermap_node != null) {
 							// Get part of the table for color sets of size sub_cur_size
 							innermap_size = innermap_node.getHashMap(Integer.valueOf(sub_cur_size));
@@ -187,7 +194,7 @@ public class MCA_instance_FPT_C extends MCA_instance {
 							if (innermap_size != null) {
 								
 								// For all color sets s_one of size sub_cur_size of node current_node
-								for (Map.Entry<Integer, Paire> entry_one : innermap_size.entrySet()) {
+								for (Map.Entry<BitSet, Paire> entry_one : innermap_size.entrySet()) {
 									
 									/************* For respecting time limit *************/
 									if (Thread.interrupted()) {
@@ -196,7 +203,7 @@ public class MCA_instance_FPT_C extends MCA_instance {
 						    		}
 									/************* For respecting time limit *************/
 									
-					            	Integer s_one = entry_one.getKey();
+									BitSet s_one = entry_one.getKey();
 					            	Paire value_s_one = entry_one.getValue();
 					            	
 					            	//System.out.println("--------------------- la j'ai s_one = " + s_one + " de poids " + value_s_one);
@@ -208,7 +215,7 @@ public class MCA_instance_FPT_C extends MCA_instance {
 									if (innermap_size2 != null) {
 										
 										// For all color sets s_two of size (current_size - sub_cur_size +1) of node current_node
-										for (Map.Entry<Integer, Paire> entry_two : innermap_size2.entrySet()) {
+										for (Map.Entry<BitSet, Paire> entry_two : innermap_size2.entrySet()) {
 											
 											/************* For respecting time limit *************/
 											if (Thread.interrupted()) {
@@ -217,17 +224,26 @@ public class MCA_instance_FPT_C extends MCA_instance {
 								    		}
 											/************* For respecting time limit *************/
 											
-							            	Integer s_two = entry_two.getKey();
+											BitSet s_two = entry_two.getKey();
 							            	Paire value_s_two = entry_two.getValue();
 							            	
 							            	//System.out.println("--------------------- la j'ai s_two = " + s_two + " de poids " + value_s_two);
 							            	
-							            	if (are_disjoint(s_one-graph.getNode(current_node).getColor(), s_two-graph.getNode(current_node).getColor())) {
+							            	// Checking if s_one and s_two are disjoint (at the exception of bit color_current_node)
+							            	merged_color_set.clear();
+							                merged_color_set.or(s_one);
+							            	merged_color_set.set(color_current_node, false);
+							            	
+							            	
+							            	if ( !(merged_color_set.intersects(s_two)) ) {
+							            		
+							            		// Update merged_color_set
+							            		merged_color_set.or(s_two);
 							            		
 							            		first = value_s_one.getWeight() + value_s_two.getWeight();
 							            		
-							            		second = hmap.getElement(Integer.valueOf(graph.getNode(current_node).getNumero()),
-							            				Integer.valueOf(current_size), (s_one+s_two-graph.getNode(current_node).getColor()));
+							            		second = hmap.getElement(Integer.valueOf(current_node),
+							            				Integer.valueOf(current_size), merged_color_set );
 							            		
 								                //System.out.println("first = " + first + " and second = " + second);
 								                
@@ -235,9 +251,9 @@ public class MCA_instance_FPT_C extends MCA_instance {
 								                	
 								                	
 								                	pred.setLength(0);
-								                	if (value_s_one.getPred() != "") {
+								                	if ( !(value_s_one.getPred().equals("")) ) {
 								                		pred.append(value_s_one.getPred());
-								                		if (value_s_two.getPred() != "") {
+								                		if ( !(value_s_two.getPred().equals("")) ) {
 								                			pred.append("_" + value_s_two.getPred());
 								                		}		
 								                	}
@@ -246,13 +262,13 @@ public class MCA_instance_FPT_C extends MCA_instance {
 								                	}
 								                	
 								                	
-								                	hmap.addElement(Integer.valueOf(graph.getNode(current_node).getNumero()),
-								            				Integer.valueOf(current_size), (s_one+s_two-graph.getNode(current_node).getColor()), new Paire(first, pred.toString()));
+								                	hmap.addElement(Integer.valueOf(current_node),
+								            				Integer.valueOf(current_size), merged_color_set.get(0, merged_color_set.size()), new Paire(first, pred.toString()));
 									                
 									                /*System.out.print("New entry B : ");
-									                System.out.print("node = " + Integer.valueOf(graph.getNode(current_node).getNumero()));
+									                System.out.print("node = " + Integer.valueOf(current_node));
 									                System.out.print(", size = " + Integer.valueOf(current_size));
-									                System.out.print(", color_set = " + (s_one+s_two-graph.getNode(current_node).getColor()));
+									                System.out.print(", merged_color_set = " + merged_color_set);
 									                System.out.print(", paire.weight : " + first);
 									                System.out.println(", paire.pred : " + pred);
 									                System.out.println();*/
@@ -290,18 +306,18 @@ public class MCA_instance_FPT_C extends MCA_instance {
 	public Paire searchBest(Integer i) {
 		
 		double res = -1;
-		Paire best = hmap.getOuterMap().get(i).getElement(0, 0);
+		Paire best = new Paire(0,"");
 		
-		HashMap2DG<Integer, Integer, Paire> hmap2d = hmap.getOuterMap().get(i);
+		HashMap2DG<Integer, BitSet, Paire> hmap2d = hmap.getOuterMap().get(i);
 	       
 	       
-		for (Map.Entry<Integer,HashMap<Integer, Paire>> entry : hmap2d.getOuterMap().entrySet()) {
+		for (Map.Entry<Integer,HashMap<BitSet, Paire>> entry : hmap2d.getOuterMap().entrySet()) {
 			
-	           HashMap<Integer, Paire> value = entry.getValue();
+	           HashMap<BitSet, Paire> value = entry.getValue();
 	           
 	           //System.out.println("For size " + key + " : ");
 	           
-	           for (Map.Entry<Integer, Paire> entrybis : value.entrySet()) {
+	           for (Map.Entry<BitSet, Paire> entrybis : value.entrySet()) {
 	           	
 	           	Paire valuebis = entrybis.getValue();
 	           	

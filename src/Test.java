@@ -27,40 +27,55 @@ public class Test {
 		long time_solve_seconds = Long.valueOf(args[3]);
 		
 		/* Use it when too lazy to make a .jar to check if modified things are ok
-		String where_read = "Small_data_MCA/erreur.graph";
+		String where_read = "Small_data_MCA/CCMSLIB00000001645.89.graph";
 		String where_write = "truc";
 		String what_to_do = "c";
-		long time_solve_seconds = 3L;*/
+		long time_solve_seconds = 1L;*/
+		
 		
         // Building graph
         Graph graph = new Graph(where_read);
+        StringBuffer output =  new StringBuffer("");
         
-        // Filling output
-        StringBuffer output =  new StringBuffer(get_basename_instance(where_read));
-        output.append(' ');
-        output.append(graph.getN());
-        output.append(' ');
-        output.append(graph.getM());
-        output.append(' ');
-        output.append(graph.getC());
-        output.append(' ');
-        output.append(graph.give_intwo());
-        //output.append(' ');
-        //output.append(what_to_do);
-        
-        // Start measuring time
-     	long lStartTime = System.nanoTime();
-        
-        // PRE : algo can not handle graphs containing more than 30 colors
-        if ( graph.is_correct_instance() ) {
+        if (graph.is_instance_correct()) {
         	
-        	// Dealing with "threads" for time limit
-    		ExecutorService executor = Executors.newSingleThreadExecutor();
+        	// Filling output
+        	if ( (what_to_do.equals("c")) || (what_to_do.equals("both-c")) || (what_to_do.equals("in2")) ) {
+        		output.append(get_basename_instance(where_read));
+                output.append(' ');
+                output.append(graph.getMolecule());
+                output.append(" -- ");
+        		output.append(graph.getN());
+                output.append(' ');
+                output.append(graph.getM());
+                output.append(' ');
+                output.append(graph.getC());
+                output.append(' ');
+                output.append(graph.getIntwo());
+                output.append(' ');
+                output.append(graph.getS());
+                output.append(" -- ");
+        	}
+        	else if (what_to_do.equals("both-in2")) {
+        		output.append(' ');
+        	}
+        	
+        	
+        	
+        	
+        	// In order to know if a solution will be found
+        	String[] old_word_sep = output.toString().split("\\s+");
+            
+            // Start measuring time
+         	long lStartTime = System.nanoTime();
+         	
+            // Dealing with "threads" for time limit
+            ExecutorService executor = Executors.newSingleThreadExecutor();
     		Task myTask = new Task(graph, what_to_do);
     		Future<String> future = executor.submit(myTask);
 
             try {
-                // add weight_sol to output if solution has been solved
+                // add weight_sol to output if a solution is found
             	output.append( future.get(time_solve_seconds*1000, TimeUnit.MILLISECONDS) );
             	
             } catch (TimeoutException e) {
@@ -68,36 +83,38 @@ public class Test {
             }
             
             executor.shutdownNow();
+            
+            // Get time which is spent to solve instance
+            long lEndTime = System.nanoTime();
+            long output_time = lEndTime - lStartTime;
+            
+    		
+            // Add -1 to result if no solution found
+            String[] new_word_sep = output.toString().split("\\s+");
+            if (new_word_sep.length == old_word_sep.length) {
+            	output.append(" -1");
+            }
+            
+            // Add time to result in seconds + 3 decimals
+            output.append(' ');
+            output.append(nano_to_sec(output_time));
         	
         }
-        else {
-        	// If the graph has more than 30 colors
-        	if (!graph.has_no_more_30_col()) {
-        		output.append(" -1");
-        	}
-        	// Some arcs or weights are missing in the instance
-        	else {
-        		output.append(" -2");
-        	}
-        	
+        // do not put anything if what_to_do == both-in2 => already written
+        else if ( (what_to_do.equals("c")) || (what_to_do.equals("both-c")) || (what_to_do.equals("in2")) ) {
+        	output.append(get_basename_instance(where_read));
+            output.append(' ');
+        	output.append("incorrect");
         }
         
-        // Get time which is spent to solve instance
-        long lEndTime = System.nanoTime();
-        long output_time = lEndTime - lStartTime;
-        
-		
-        // Add -1 to result if no solution found
-        String[] word_sep = output.toString().split("\\s+");
-        if (word_sep.length < 6) {
-        	output.append(" -3");
+        // do not go to next line if what_to_do == "both-c"
+        if ( (what_to_do.equals("c")) || (what_to_do.equals("in2")) || (what_to_do.equals("both-in2")) ) {
+        	output.append('\n');
         }
         
-        // Add time to result in seconds + 3 decimals
-        output.append(' ');
-        output.append(nano_to_sec(output_time));
-        output.append('\n');
-        
+        /************************************* A ENLEVER *******************************/
+        //System.out.println(output);
+        /************************************* A ENLEVER *******************************/
         
         
         // Writing results in file where_write

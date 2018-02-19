@@ -22,7 +22,7 @@ public class Paire {
 
 	@Override
 	public String toString() {
-		return "Triple [weight=" + weight + ", pred=" + pred + "]";
+		return "Paire [weight=" + weight + ", pred=" + pred + "]";
 	}
 	
 	
