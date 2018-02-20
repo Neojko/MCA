@@ -19,7 +19,7 @@ public class Test {
 		if (args.length != 4) {
 	      throw new IllegalArgumentException("Exactly 4 parameters required !");
 	    }
-	    
+		
 		// Variables
 		String where_read = args[0];
 		String where_write = args[1];
@@ -92,7 +92,7 @@ public class Test {
             // Add -1 to result if no solution found
             String[] new_word_sep = output.toString().split("\\s+");
             if (new_word_sep.length == old_word_sep.length) {
-            	output.append(" -1");
+            	output.append("-1");
             }
             
             // Add time to result in seconds + 3 decimals
@@ -115,7 +115,6 @@ public class Test {
         /************************************* A ENLEVER *******************************/
         //System.out.println(output);
         /************************************* A ENLEVER *******************************/
-        
         
         // Writing results in file where_write
         FileOutputStream fw = null;
