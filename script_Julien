@@ -1,31 +1,31 @@
 #!/bin/bash
 
 if [ "$#" -ne 4 ]; then
-  echo "Probleme dans run_para_all_folders_timeout : main_folder main_file_results time_limit_file time_limit_folder"
+  echo "Probleme dans run_para_all_folders_timeout : 1) time_limit_per_algo 1) time_limit_per_folder"
   exit 1
 fi
 
 # retrieve number of instances that are solved
-a=$(wc -l "$2/graphs-200-300" | cut -d " " -f 1)
-b=$(wc -l "$2/graphs-300-400" | cut -d " " -f 1)
-c=$(wc -l "$2/graphs-400-500" | cut -d " " -f 1)
-d=$(wc -l "$2/graphs-500-600" | cut -d " " -f 1)
+a=$(wc -l "Results/graphs-200-300" | cut -d " " -f 1)
+b=$(wc -l "Results/graphs-300-400" | cut -d " " -f 1)
+c=$(wc -l "Results/graphs-400-500" | cut -d " " -f 1)
+d=$(wc -l "Results/graphs-500-600" | cut -d " " -f 1)
 
-e=$(wc -l "$2/red-graphs-200-300" | cut -d " " -f 1)
-f=$(wc -l "$2/red-graphs-300-400" | cut -d " " -f 1)
-g=$(wc -l "$2/red-graphs-400-500" | cut -d " " -f 1)
-h=$(wc -l "$2/red-graphs-500-600" | cut -d " " -f 1)
+e=$(wc -l "Results/red-graphs-200-300" | cut -d " " -f 1)
+f=$(wc -l "Results/red-graphs-300-400" | cut -d " " -f 1)
+g=$(wc -l "Results/red-graphs-400-500" | cut -d " " -f 1)
+h=$(wc -l "Results/red-graphs-500-600" | cut -d " " -f 1)
 
 # solve other instances
-timeout $4 bash para_folder_start_last "$1/graphs-200-300" "$2/graphs-200-300" $3 $a &
-timeout $4 bash para_folder_start_last "$1/graphs-300-400" "$2/graphs-300-400" $3 $b &
-timeout $4 bash para_folder_start_last "$1/graphs-400-500" "$2/graphs-400-500" $3 $c &
-timeout $4 bash para_folder_start_last "$1/graphs-500-600" "$2/graphs-500-600" $3 $d &
+timeout $2 bash run_folder_start_last "Data_MCA/graphs-200-300" "Results/graphs-200-300" $1 $a &
+timeout $2 bash run_folder_start_last "Data_MCA/graphs-300-400" "Results/graphs-300-400" $1 $b &
+timeout $2 bash run_folder_start_last "Data_MCA/graphs-400-500" "Results/graphs-400-500" $1 $c &
+timeout $2 bash run_folder_start_last "Data_MCA/graphs-500-600" "Results/graphs-500-600" $1 $d &
 
-timeout $4 bash para_folder_start_last "$1/red-graphs-200-300" "$2/red-graphs-200-300" $3 $e &
-timeout $4 bash para_folder_start_last "$1/red-graphs-300-400" "$2/red-graphs-300-400" $3 $f &
-timeout $4 bash para_folder_start_last "$1/red-graphs-400-500" "$2/red-graphs-400-500" $3 $g &
-timeout $4 bash para_folder_start_last "$1/red-graphs-500-600" "$2/red-graphs-500-600" $3 $h &
+timeout $2 bash run_folder_start_last "Data_MCA/red-graphs-200-300" "Results/red-graphs-200-300" $1 $e &
+timeout $2 bash run_folder_start_last "Data_MCA/red-graphs-300-400" "Results/red-graphs-300-400" $1 $f &
+timeout $2 bash run_folder_start_last "Data_MCA/red-graphs-400-500" "Results/red-graphs-400-500" $1 $g &
+timeout $2 bash run_folder_start_last "Data_MCA/red-graphs-500-600" "Results/red-graphs-500-600" $1 $h &
 wait
 
 
