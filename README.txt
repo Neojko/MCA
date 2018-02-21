@@ -1,29 +1,35 @@
 INTRODUCTION :
 
-Download the .jar and the scripts you want. A few data is given in case you don't have some.
+You can find here two implementations of algorithms solving the Maximum Colorful Arborescence (MCA) problem relatively to two parameters : c and in2 (n^*_h in the literature). The first one is an algorithm from the literature and the second one is an algorithm which was created with Guillaume Fertin and Christian Komusiewicz (see refs below).
 
-Output given by the algorithms (name of file contains c or in2):
-name_instance_file n m c in2 weight_sol time
+References :
+- https://hal.archives-ouvertes.fr/hal-01524069 (Introduction of MCA)
+- https://arxiv.org/pdf/1710.07584.pdf (in2 algorithm)
 
-- If weight_sol = -1 : the graph has more than 30 colors
-- If weight_sol = -2 : the instance file is not complete (some are missing arcs like CCMSLIB00000085542.5.graph in red-graphs-100-200 or CCMSLIB00000077104.5.graph in graphs-100-200))
-- if weight_sol = -3 : the graph has at most 30 colors and the instance file is complete, but no solution has been found within a time limit (which in this case is equal to time).
-
-
-PRECONDITIONS : 
-
-- In every instance file, the outneighbors of each vertex are "sorted by color" : if a blue vertex is declared as an outneighbor of a vertex v, then any other blue vertex which is an outneighbor of v must be declared before declaring an outneighbor of v which is not blue. In other words, we can not declare a blue vertex, a red vertex and an other blue vertex as outneighbors of v. 
-=> Guillaume / Christian : this condition is respected for all our files.
+Download mca.jar and the scripts you want. A few data is given in case you don't have some.
 
 
-/***********************************/
+/*************************************************************/
 
-WARNINGS :
+INSTANCE FILES SHAPE :
 
-- Algorithms do not handle instances with more than 30 colors
+1) Your instance must be a MCA instance.
+
+2) Shape of instance :
+
+- lign 1 : name_molecule n m rest_is_not_considerered
+
+- node_lign (one per node) : node_number random_color
+=> node_number starts at 0 and ends at n-1
+=> a node u has the same color than last entered node v if random_color is the same for u and v.
+=> Any pair of nodes which share the same color must be written consecutively.
+
+- arc_lign : node1 node2 weight
+=> builds an arc from node1 to node2
+=> order : do it for each node2 from 1 to n-1 (if such node2 has inneighbors). For each such node2, do it for each node1 from 0 to n-2 (if there exists an arc from node1 to node2).
 
 
-/***********************************/
+/*************************************************************/
 
 HOW TO USE SCRIPTS :
 
@@ -37,31 +43,54 @@ p3 : Choose the processed algorithm : c or in2
 p4 : time limit in seconds
 
 
-2) Run one time for all files in a folder :
 
-bash run_folder p1 p2 p3 p4
+2) Run the two algorithms in a folder :
 
-p1 : folder containing instance files
-p2 : file for writing results (can be created) : it will be the same for all instances
-p3 : Choose the processed algorithm : c or in2
-p4 : time limit in seconds for each file run
+In case no file is already done :
+bash run_folder_start_zero p1 p2 p3
+
+In case X files are already done :
+bash run_folder_start_last p1 p2 p3 X
+
+p1 : main folder containing instance files
+p2 : main folder where results will be written
+p3 : timeout per algorithm
 
 
-3) Run one time for all graph folders in a folder :
 
-bash run_all_folders p1 p2 p3 p4
+3) Run the two algorithms for all folders in parallel :
 
-p1 : folder containing folders of instance files
-p2 : folder where results will be written : a different file will be created for each folder in folder p1
-p3 : Choose the processed algorithm : c or in2
-p4 : time limit in seconds for each file run
+In case no file is already done :
+bash para_all_folders_start_zero p1 p2 p3 p4
 
-4) Run the two algorithms for all folders with time limit per folder and another time limit per file
+In case X files are already done :
+bash para_all_folders_start_last p1 p2 p3 p4
 
-bash run_timeout_each_folder p1 p2 p3 p4
+p1 : main folder of folders of instances
+p2 : main folder where results will be written
+p3 : timeout per algorithm
+p4 : timeout per folder of instances
 
-p1 : folder containing instance files
-p2 : file for writing results (can be created) : it will be the same for all instances
-p3 : time limit in seconds for each file run
-p4 : time limit in seconds for each folder run
+
+/*************************************************************/
+
+OUTPUT (per instance) :
+name_graph name_molecule -- n m c in2 s - weight_c time_c weight_in2 time_in2
+
+with :
+- n : number of vertices in the graph
+- m : number of arcs in the graph
+- c : number of colors in the graph
+- in2 : number of colors of indegree at least 2 in color hierarchy graph (see reference 2)
+- s : minimum number of arcs which need to be removed in order to make the color hierarchy graph a tree (see reference 1).
+- weight_c/weight_in2 : weight of solution found by c/in2 algorithm. In case no solution is found within the time limit (which will be time_c/time_in2 in such a case) the weight is equal to -1, otherwise the weight is positive.
+- time_c/time_in2 : computation time.
+
+
+
+
+
+
+
+
 

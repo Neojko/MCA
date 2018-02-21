@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if [ "$#" -ne 4 ]; then
+  echo "Probleme dans run_folder_start_last : 1) directory 2) where_to_write_results 3) timeout_per_algorithm 4) number_of_starting_file"
+  exit 1
+fi
+
+echo "Working on directory $1 : starting at number $4"
+
+let "a = 0"
+
+for file in "$1"/*
+do
+  #echo "$(basename $file)"
+  case "$file" in
+  *.graph ) 
+        
+        if [ $a = "$4" ]
+        then
+        	#echo "$(basename $file)"
+        	bash run_mca $file $2 "both-c" $3
+        	bash run_mca $file $2 "both-in2" $3
+        
+        else
+       	#echo "nope a = $a"
+        	let "a = a + 1"
+        fi
+        ;;
+  esac
+done

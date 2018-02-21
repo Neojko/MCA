@@ -8,6 +8,7 @@ import java.lang.Integer;
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.IndexOutOfBoundsException;
+import java.lang.NumberFormatException;
 
 public class Graph {
 
@@ -168,6 +169,11 @@ public class Graph {
 		    {
 		    	correct_instance = false;
 		    	//System.out.println("3");
+		    }
+		    catch (NumberFormatException exception)
+		    {
+		    	correct_instance = false;
+		    	//System.out.println("4");
 		    }
 		}
 		catch (FileNotFoundException exception)
